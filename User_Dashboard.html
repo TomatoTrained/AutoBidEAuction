@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Dashboard</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: url("C:/Users/Eddywale/Desktop/New MSU group Project/Car images/Luxurious/1720729049821.jpg")
+          no-repeat center center fixed;
+        background-size: cover;
+        color: #333;
+      }
+
+      .dashboard {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 50px auto;
+        width: 70%;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+      }
+
+      .tab-buttons {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+
+      .tab-button {
+        padding: 10px 20px;
+        background-color: #f0f;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        margin: 0 5px;
+        text-decoration: none;
+        color: white;
+        transition: background-color 0.3s;
+      }
+
+      .tab-button:hover {
+        background-color: #e0e;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .active {
+        display: block;
+      }
+
+      h1 {
+        font-size: 30px;
+        font-weight: bold;
+        margin: 0;
+        padding: 10px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="dashboard">
+      <h1>My Dashboard</h1>
+
+      <div class="tab-buttons">
+        <button class="tab-button" onclick="openTab('home')">
+          <a href="home.html">Home</a>
+        </button>
+        <button class="tab-button" onclick="openTab('myBids')">
+          <a href="my-bids.html">My Bids</a>
+        </button>
+        <button class="tab-button" onclick="openTab('carSearch')">
+          <a href="car-search.html">Car Search</a>
+        </button>
+        <button class="tab-button" onclick="openTab('auctionCalendar')">
+          <a href="auction--calendar.html">Auction Calendar </a>
+        </button>
+        <button class="tab-button" onclick="openTab('myAccount')">
+          <a href="my-account.html">My Account</a>
+        </button>
+        <button class="tab-button" onclick="openTab('notifications')">
+          <a href="notifications.html">Notifications</a>
+        </button>
+        <button class="tab-button" onclick="openTab('faq')">
+          <a href="FAQ.html">FAQ</a>
+        </button>
+      </div>
+
+      <div id="home" class="tab-content active">
+        <h2>Welcome to Your Dashboard</h2>
+        <p>This is your home tab content.</p>
+      </div>
+
+      <div id="myBids" class="tab-content">
+        <h2>My Bids</h2>
+        <p>This is your bids tab content.</p>
+      </div>
+
+      <div id="carSearch" class="tab-content">
+        <h2>Car Search</h2>
+        <p>This is your car search tab content.</p>
+      </div>
+
+      <div id="auctionCalendar" class="tab-content">
+        <h2>Auction Calendar</h2>
+        <p>This is your auction calendar tab content.</p>
+      </div>
+
+      <div id="myAccount" class="tab-content">
+        <h2>My Account</h2>
+        <p>This is your account information tab content.</p>
+      </div>
+
+      <div id="notifications" class="tab-content">
+        <h2>Notifications</h2>
+        <p>This is your notifications tab content.</p>
+      </div>
+
+      <div id="faq" class="tab-content">
+        <h2>FAQ</h2>
+        <p>This is your FAQ content.</p>
+      </div>
+    </div>
+
+    <script>
+      function openTab(tabName) {
+        // Hide all tab content
+        var tabContents = document.getElementsByClassName("tab-content");
+        for (var i = 0; i < tabContents.length; i++) {
+          tabContents[i].style.display = "none";
+        }
+
+        // Remove active class from all buttons
+        var tabs = document.getElementsByClassName("tab-button");
+        for (var i = 0; i < tabs.length; i++) {
+          tabs[i].classList.remove("active");
+        }
+
+        // Show specific tab content
+        document.getElementById(tabName).style.display = "block";
+        // Set active class on the clicked button
+        event.currentTarget.classList.add("active");
+      }
+
+      // Initialize by opening the home tab
+      openTab("home");
+    </script>
+  </body>
+</html>

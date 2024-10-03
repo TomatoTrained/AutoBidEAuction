@@ -1,0 +1,90 @@
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8" />  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+    <title>Notifications Page</title>  
+    <style>  
+        .notification:last-child {  
+            border-bottom: none;  
+        }  
+
+        .notification {  
+            padding: 10px;  
+            border-bottom: 1px solid #ccc;  /* Fixed typo on border */  
+        }  
+
+        h1 {  
+            color: green;  
+            font-family: Arial, sans-serif;  
+        }  
+
+        body {  
+            background-color: white;  
+        }  
+    </style>  
+</head>  
+<body>  
+    <h1>Notifications</h1>  
+    <div id="notifications-container"></div>  
+
+    <div id="highest-bidder-amount"></div>  
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>  
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>  
+    <script>  
+        // Firebase configuration (replace with your Firebase project config)  
+        const firebaseConfig = {  
+            apiKey: "YOUR_API_KEY",  
+            authDomain: "YOUR_AUTH_DOMAIN",  
+            databaseURL: "YOUR_DATABASE_URL",  
+            projectId: "YOUR_PROJECT_ID",  
+            storageBucket: "YOUR_STORAGE_BUCKET",  
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",  
+            appId: "YOUR_APP_ID"  
+        };  
+
+        // Initialize Firebase  
+        const app = firebase.initializeApp(firebaseConfig);  
+        const database = firebase.database();  
+
+        // Fetch and display notifications (needs implementation)  
+        function getNotifications() {  
+            // Example data fetching - replace with actual fetching logic  
+            const notifications = [  
+                { message: "Notification 1" },  
+                { message: "Notification 2" },  
+                { message: "Notification 3" },  
+            ];  
+            displayNotifications(notifications);  
+        }  
+
+        function displayNotifications(notifications) {  
+            const container = document.getElementById("notifications-container");  
+            container.innerHTML = "";  
+            notifications.forEach((notification) => {  
+                const notificationElement = document.createElement("div");  
+                notificationElement.textContent = notification.message;  
+                notificationElement.classList.add("notification");  // Added class for styling  
+                container.appendChild(notificationElement);  
+            });  
+        }  
+
+        // Get the highest bidder amount from Firebase  
+        const highestBidderAmountElement = document.getElementById('highest-bidder-amount');  
+
+        // Listen for changes to the bids nodes  
+        database.ref('bids').on('value', (snapshot) => {  
+            const bids = snapshot.val();  
+            if (bids && Object.keys(bids).length > 0) {  
+                const highestBidderAmount = Math.max(...Object.values(bids));  
+                highestBidderAmountElement.innerText = `Highest Bidder Amount: $${highestBidderAmount}`;  
+            } else {  
+                highestBidderAmountElement.innerText = "No bids available.";  
+            }  
+        });  
+
+        // Initial call to get notifications  
+        getNotifications();  
+    </script>  
+</body>  
+</html>

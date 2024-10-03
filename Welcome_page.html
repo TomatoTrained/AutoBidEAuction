@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to AutoBid Car Sales</title>
+    <style>
+      body {
+        background-image: url("C:/Users/Eddywale/Desktop/eAuction System by Tomato_Trained/Pictures and Images/Web Images/IMG-20240712-WA0008.jpg");
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      h1 {
+        font-family: Arial, sans-serif;
+        font-size: 30px;
+        font-weight: bold;
+        color: #111;
+      }
+
+      .logo-container {
+        width: 220px; /* Width of the oval */
+        height: 150px; /* Height of the oval */
+        border-radius: 110px; /* Half of the width for a perfect oval */
+        overflow: hidden; /* To make sure the logo fits within the oval */
+        margin-bottom: 20px; /* Space below the logo container */
+        display: flex; /* Center the image */
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(
+          255,
+          255,
+          255,
+          0.7
+        ); /* Optional background color */
+      }
+
+      .logo {
+        width: 100%; /* Make the logo fill the container */
+        height: auto; /* Maintain the aspect ratio */
+      }
+
+      .login-form select,
+      .login-form button {
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        margin: 10px 0;
+        width: 100%;
+      }
+
+      .login-form select {
+        background-color: #f9f9f9;
+        appearance: none; /* Remove default arrow */
+        background-image: url('data:image/svg+xml,%3Csvg xmlns="(link unavailable)" width="100" height="100" fill="%232b2b2b"%3E%3Cpolygon points="0,0 100,0 50,50"%3E%3C/polygon%3E%3C/svg%3E'); /* Add custom arrow */
+        background-position: right 10px top 50%;
+        background-repeat: no-repeat;
+      }
+
+      .login-form button {
+        background-color: #4caf50; /* Green color */
+        color: white;
+        cursor: pointer;
+      }
+
+      .login-form button:hover {
+        background-color: #45a049; /* Darker green on hover */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo-container">
+        <img
+          src="C:/Users/Eddywale/Desktop/New MSU group Project/Auto bid Car Sales Logo.png"
+          alt="Company Logo"
+          class="logo"
+        />
+      </div>
+      <h1>Welcome To AutoBid Car Sales</h1>
+      <p>Sign In as</p>
+      <form class="login-form">
+        <select id="role-select">
+          <option value="">--Select--</option>
+          <option value="admin.html">Admin</option>
+          <option value="user.html">Buyer</option>
+        </select>
+        <button type="button" id="login-btn">Sign In</button>
+      </form>
+    </div>
+
+    <script>
+      document
+        .getElementById("login-btn")
+        .addEventListener("click", function () {
+          var selectedRole = document.getElementById("role-select").value;
+          if (selectedRole) {
+            window.location.href = selectedRole;
+          } else {
+            alert("Please select a role!");
+          }
+        });
+    </script>
+  </body>
+</html>

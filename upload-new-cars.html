@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin - Upload Car</title>
+    <link rel="stylesheet" href="stylz3.css" />
+    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js"></script>
+  </head>
+  <body>
+    <h1>Upload a Car</h1>
+    <form id="carForm">
+      <input type="text" id="make" placeholder="Car Make" required />
+      <input type="text" id="model" placeholder="Car Model" required />
+      <input type="number" id="year" placeholder="Year" required />
+      <input type="number" id="price" placeholder="Price" required />
+      <input type="file" id="image" accept="image/*" required />
+      <button type="submit">Upload Car</button>
+    </form>
+
+    <script>
+         // Your Firebase configuration  
+        const firebaseConfig = {  
+            apiKey: "YOUR_API_KEY",  
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",  
+            projectId: "YOUR_PROJECT_ID",  
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",  
+            messagingSenderId: "YOUR_SENDER_ID",  
+            appId: "YOUR_APP_ID"  
+        };  
+
+        // Initialize Firebase  
+        const app = firebase.initializeApp(firebaseConfig);  
+        const db = firebase.firestore();  
+        const storage = firebase.storage();  
+
+        document.getElementById('carForm').addEventListener('submit', async (e) => {  
+            e.preventDefault();  
+
+            const make = document.getElementById('make').value;  
+            const model = document.getElementById('model').value;  
+            const year = document.getElementById('year').value;  
+            const price = document.getElementById('price').value;  
+            const imageFile = document.getElementById('image').files[0];  
+
+            // Upload image to Firebase Storage  
+            const storageRef = storage.ref(`car-images/${imageFile.name}`);  
+            await storageRef.put(imageFile);  
+            const imageUrl = await storageRef.getDownloadURL();  
+
+            // Save car information in Firestore  
+            await db.collection('cars').add({  
+                make,  
+                model,  
+                year: parseInt(year),  
+                price: parseFloat(price),  
+                imageUrl,  
+                bids: []  
+            });  
+
+            alert('Car uploaded successfully!');  
+        });  
+    </script>
+    </script>
+  </body>
+</html>

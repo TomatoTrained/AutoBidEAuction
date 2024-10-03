@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Upload Calendar</title>
+    <link rel="stylesheet" href="stylz2.css" />
+    <!-- Link to external CSS file -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Upload Calendar PDF</h1>
+      <input type="file" id="fileInput" accept="application/pdf" />
+      <button id="uploadButton">Upload</button>
+    </div>
+
+    <script>
+      // Your Firebase configuration
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        databaseURL: "YOUR_DATABASE_URL",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID",
+      };
+
+      // Initialize Firebase
+      const app = firebase.initializeApp(firebaseConfig);
+      const storage = firebase.storage();
+      const database = firebase.database();
+
+      document
+        .getElementById("uploadButton")
+        .addEventListener("click", function () {
+          const file = document.getElementById("fileInput").files[0];
+          if (!file) {
+            alert("Please select a file first.");
+            return;
+          }
+          const storageRef = storage.ref("calendars/" + file.name);
+          const uploadTask = storageRef.put(file);
+
+          uploadTask.on(
+            "state_changed",
+            function (snapshot) {
+              // Handle progress (optional)
+            },
+            function (error) {
+              console.error(error);
+              alert("Upload failed! " + error.message);
+            },
+            function () {
+              uploadTask.snapshot.ref
+                .getDownloadURL()
+                .then(function (downloadURL) {
+                  // Store the download URL in the database
+                  database.ref("calendars/" + file.name).set({
+                    url: downloadURL,
+                    name: file.name,
+                  });
+                  alert("Upload successful!");
+                });
+            }
+          );
+        });
+    </script>
+  </body>
+</html>

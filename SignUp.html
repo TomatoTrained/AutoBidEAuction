@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up</title>
+    <style>
+      body {
+        background-size: cover;
+        background-position: center;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+      h1 {
+        font-family: Arial, sans-serif;
+        font-size: 30px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+      input {
+        margin: 10px 0;
+        padding: 10px;
+        width: 300px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        padding: 10px 15px;
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #218838;
+      }
+    </style>
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js"></script>
+    <script>
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
+        authDomain: "user-login-form-a440d.firebaseapp.com",
+        databaseURL:
+          "https://user-login-form-a440d-default-rtdb.firebaseio.com",
+        projectId: "user-login-form-a440d",
+        storageBucket: "user-login-form-a440d.appspot.com",
+        messagingSenderId: "536643428878",
+        appId: "1:536643428878:web:b9527baf1828015b0a525f",
+      };
+
+      // Initialize Firebase
+      const app = firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+
+      //firebase reference
+      var loginFormDB=firebase.database().ref("signupForm");
+
+      // Function to sign up a user
+      function signupUser(email, password) {
+        auth
+          .createUserWithEmailAndPassword(email, password)
+          .then((userCredential) => {
+            alert("Account successfully created!");
+            window.location.href = "welcome.html"; // Redirect to welcome page
+          })
+          .catch((error) => {
+            const errorMessage = error.message;
+            alert("Error: " + errorMessage);
+          });
+      }
+
+      // Handle form submission
+      document.addEventListener("DOMContentLoaded", function () {
+        document
+          .getElementById("signupForm")
+          .addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent default form submission
+            const fullname = document.getElementById("fullname").value; // FullName could be stored in the database if needed.
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            // Call the signup function
+            signupUser(email, password);
+          });
+      });
+    </script>
+  </head>
+  <body
+    background="C:\Users\Eddywale\Desktop\eAuction System by Tomato_Trained\Pictures and Images\Web Images\IMG-20240712-WA0008.jpg"
+  >
+    <h1>Sign Up</h1>
+    <form id="signupForm">
+      <input
+        type="text"
+        name="fullname"
+        placeholder="Full Name"
+        id="fullname"
+        required
+      /><br />
+      <input
+        type="email"
+        name="email"
+        id="email"
+        placeholder="Email"
+        required
+      /><br />
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        id="password"
+        required
+      /><br />
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html>

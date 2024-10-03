@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="styles5.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/ionicons@5.5.2/dist/css/ionicons.min.css"
+    />
+    <title>User Login Page</title>
+    <style></style>
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js"></script>
+    <script>
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID",
+      };
+
+      // Initialize Firebase
+      const app = firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+
+      // Function to log in
+      function loginUser(email, password) {
+        auth
+          .signInWithEmailAndPassword(email, password)
+          .then((userCredential) => {
+            alert("Login successful!");
+            window.location.href = "welcome.html"; // Replace with your redirect page
+          })
+          .catch((error) => {
+            const errorMessage = error.message;
+            alert("Error: " + errorMessage);
+          });
+      }
+
+      function showSignupForm() {
+        window.location.href = "signup.html"; // Redirect to signup page
+      }
+
+      function validateForm() {
+        var email = document.getElementById("email").value;
+        var password = document.getElementById("password").value;
+
+        if (email === "" || password === "") {
+          alert("Please enter both email and password");
+          return false; // Prevent form submission
+        }
+
+        if (password.length < 2) {
+          alert("Password must be at least 2 characters long");
+          return false;
+        }
+
+        // Log in the user
+        loginUser(email, password);
+        return false; // Prevent actual form submission
+      }
+    </script>
+  </head>
+  <body
+    background="C:\Users\Eddywale\Desktop\eAuction System by Tomato_Trained\Pictures and Images\Web Images\IMG-20240712-WA0008.jpg"
+  >
+    <section>
+      <div id="loginForm" class="form-box">
+        <div class="form-value">
+          <form onsubmit="return validateForm()">
+            <h2>Login</h2>
+            <div class="inputbox">
+              <ion-icon name="person"></ion-icon>
+              <input type="email" id="email" name="email" required />
+              <label for="email">User</label>
+            </div>
+            <div class="inputbox">
+              <ion-icon name="lock-closed"></ion-icon>
+              <input type="password" id="password" name="password" required />
+              <label for="password">Password</label>
+            </div>
+            <div class="forget">
+              <label for="remember">
+                <input type="checkbox" id="remember" /> Remember
+                <a href="#">Forgot my Password</a>
+              </label>
+            </div>
+            <button type="submit">Log In</button>
+            <br /><br />
+            <div class="register">
+              <p>
+                I don't have an account
+                <a href="#" onclick="showSignupForm()">Sign Up</a>
+              </p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

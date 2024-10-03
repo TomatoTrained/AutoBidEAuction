@@ -1,0 +1,88 @@
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8" />  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+    <title>My Bids</title>  
+    <style>  
+        .bid {  
+            padding: 10px;  
+            border-bottom: 1px solid #ccc;  
+        }  
+        
+        .bid:last-child {  
+            border-bottom: none;  
+        }  
+
+        h1 {  
+            color: green;  
+            font-family: Arial, sans-serif;  
+        }  
+
+        body {  
+            background-color: white;  
+        }  
+
+        .section {  
+            margin-top: 20px;  
+        }  
+    </style>  
+</head>  
+<body>  
+    <h1>My Bids</h1>  
+    <div id="my-bids-container" class="section"></div>  
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>  
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>  
+    <script>  
+        // Firebase configuration (replace with your Firebase project config)  
+        const firebaseConfig = {  
+            apiKey: "YOUR_API_KEY",  
+            authDomain: "YOUR_AUTH_DOMAIN",  
+            databaseURL: "YOUR_DATABASE_URL",  
+            projectId: "YOUR_PROJECT_ID",  
+            storageBucket: "YOUR_STORAGE_BUCKET",  
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",  
+            appId: "YOUR_APP_ID"  
+        };  
+
+        // Initialize Firebase  
+        const app = firebase.initializeApp(firebaseConfig);  
+        const database = firebase.database();  
+
+        // Fetch and display my bids  
+        function getMyBids(userId) {  
+            database.ref('bids').orderByChild('userId').equalTo(userId).on('value', (snapshot) => {  
+                const myBids = snapshot.val();  
+                displayMyBids(myBids);  
+            });  
+        }  
+
+        function displayMyBids(myBids) {  
+            const container = document.getElementById("my-bids-container");  
+            container.innerHTML = "";  
+
+            if (myBids && Object.keys(myBids).length > 0) {  
+                Object.keys(myBids).forEach(bidId => {  
+                    const bid = myBids[bidId];  
+                    const bidElement = document.createElement("div");  
+                    bidElement.classList.add("bid");  
+                    bidElement.innerHTML = `  
+                        <strong>Bid ID:</strong> ${bidId}<br>  
+                        <strong>Amount:</strong> $${bid.amount}<br>  
+                        <strong>Item:</strong> ${bid.item}<br>  
+                        <strong>Date:</strong> ${new Date(bid.date).toLocaleString()}<br>  
+                        <hr>  
+                    `;  
+                    container.appendChild(bidElement);  
+                });  
+            } else {  
+                container.innerText = "No bids placed.";  
+            }  
+        }  
+
+        // Call functions on page load  
+        const userId = "YOUR_USER_ID"; // Replace with the actual logged-in user's ID  
+        getMyBids(userId);  
+    </script>  
+</body>  
+</html>
