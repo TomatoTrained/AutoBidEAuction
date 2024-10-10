@@ -32,7 +32,7 @@
           .signInWithEmailAndPassword(email, password)
           .then((userCredential) => {
             alert("Login successful!");
-            window.location.href = "welcome.html"; // Replace with your redirect page
+            window.location.href = "User_Dashboard.html"; // Replace with your redirect page
           })
           .catch((error) => {
             const errorMessage = error.message;
@@ -41,7 +41,7 @@
       }
 
       function showSignupForm() {
-        window.location.href = "signup.html"; // Redirect to signup page
+        window.location.href = "SignUp.html"; // Redirect to signup page
       }
 
       function validateForm() {
