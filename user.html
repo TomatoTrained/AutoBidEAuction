@@ -14,13 +14,14 @@
     <script>
       // Your web app's Firebase configuration
       const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID",
-      };
+  apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
+  authDomain: "user-login-form-a440d.firebaseapp.com",
+  databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
+  projectId: "user-login-form-a440d",
+  storageBucket: "user-login-form-a440d.appspot.com",
+  messagingSenderId: "536643428878",
+  appId: "1:536643428878:web:b9527baf1828015b0a525f",
+};
 
       // Initialize Firebase
       const app = firebase.initializeApp(firebaseConfig);
@@ -32,7 +33,7 @@
           .signInWithEmailAndPassword(email, password)
           .then((userCredential) => {
             alert("Login successful!");
-            window.location.href = "welcome.html"; // Replace with your redirect page
+            window.location.href = "User_Dashboard.html"; // Replace with your redirect page
           })
           .catch((error) => {
             const errorMessage = error.message;
@@ -41,7 +42,7 @@
       }
 
       function showSignupForm() {
-        window.location.href = "signup.html"; // Redirect to signup page
+        window.location.href = "SignUp.html"; // Redirect to signup page
       }
 
       function validateForm() {
