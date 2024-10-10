@@ -1,53 +1,19 @@
 <!DOCTYPE html>  
 <html lang="en">  
 <head>  
-    <meta charset="UTF-8" />  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
     <title>Sign Up</title>  
     <style>  
-        body {  
-            background-image: url('https://github.com/TomatoTrained/AutoBidEAuction/blob/main/IMG-20240712-WA0008.jpg?raw=true');  
-            background-size: cover;  
-            background-position: center;  
-            margin: 0;  
-            height: 100vh;  
-            display: flex;  
-            align-items: center;  
-            justify-content: center;  
-            flex-direction: column;  
-        }  
-        h1 {  
-            font-family: Arial, sans-serif;  
-            font-size: 30px;  
-            font-weight: bold;  
-            margin-bottom: 20px;  
-            color: white; /* Consider changing the text color for visibility */  
-        }  
-        input {  
-            margin: 10px 0;  
-            padding: 10px;  
-            width: 300px;  
-            border: 1px solid #ccc;  
-            border-radius: 4px;  
-        }  
-        button {  
-            padding: 10px 15px;  
-            background-color: #28a745;  
-            color: #fff;  
-            border: none;  
-            border-radius: 4px;  
-            cursor: pointer;  
-            transition: background-color 0.3s; /* Smooth hover transition */  
-        }  
-        button:hover {  
-            background-color: #218838;  
-        }  
+        /* Your existing styles */  
     </style>  
-    <!-- Add Firebase SDK -->  
-    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js"></script>  
-    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js"></script>  
-    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database.js"></script>  
-    <script>  
+    <!-- Add Firebase SDK with type="module" -->  
+    <script type="module">  
+        // Import Firebase modules  
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";  
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js";  
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-database.js";  
+
         // Your web app's Firebase configuration  
         const firebaseConfig = {  
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",  
@@ -60,23 +26,19 @@
         };  
 
         // Initialize Firebase  
-        const app = firebase.initializeApp(firebaseConfig);  
-        const auth = firebase.auth();  
-        const database = firebase.database();  
+        const app = initializeApp(firebaseConfig);  
+        const auth = getAuth(app);  
+        const database = getDatabase(app);  
 
         // Function to sign up a user  
-        function signupUser(fullname, email, password) {  
-            auth.createUserWithEmailAndPassword(email, password)  
+        window.signupUser = function(fullname, email, password) {  
+            createUserWithEmailAndPassword(auth, email, password)  
                 .then((userCredential) => {  
-                    // User signed up, now store additional information  
                     const user = userCredential.user;  
-
-                    // Store full name in the Realtime Database  
-                    database.ref('users/' + user.uid).set({  
+                    set(ref(database, 'users/' + user.uid), {  
                         fullname: fullname,  
                         email: email  
                     });  
-
                     alert("Account successfully created!");  
                     window.location.href = "user.html"; // Redirect to user page  
                 })  
@@ -84,21 +46,19 @@
                     const errorMessage = error.message;  
                     alert("Error: " + errorMessage);  
                 });  
-        }  
+        };  
 
         // Handle form submission  
         document.addEventListener("DOMContentLoaded", function () {  
-            document  
-              .getElementById("signupForm")  
-              .addEventListener("submit", function (event) {  
-                  event.preventDefault(); // Prevent default form submission  
-                  const fullname = document.getElementById("fullname").value;  
-                  const email = document.getElementById("email").value;  
-                  const password = document.getElementById("password").value;  
+            document.getElementById("signupForm").addEventListener("submit", function (event) {  
+                event.preventDefault(); // Prevent default form submission  
+                const fullname = document.getElementById("fullname").value;  
+                const email = document.getElementById("email").value;  
+                const password = document.getElementById("password").value;  
 
-                  // Call the signup function  
-                  signupUser(fullname, email, password);  
-              });  
+                // Call the signup function  
+                signupUser(fullname, email, password);  
+            });  
         });  
     </script>  
 </head>  
