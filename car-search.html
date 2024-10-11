@@ -1,20 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User - View Cars and Place Bids</title>
-    <link rel="stylesheet" href="stylz3.css" />
-    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js"></script>
-  </head>
-  <body>
-    <h1>Cars for Auction</h1>
-    <div id="carList"></div>
-
-    <script>
-      // Your Firebase configuration
-
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8" />  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+    <title>User - View Cars and Place Bids</title>  
+    <link rel="stylesheet" href="stylz3.css" />  
+    <script type="module">  
+        // Your Firebase configuration  
         const firebaseConfig = {  
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",  
             authDomain: "user-login-form-a440d.firebaseapp.com",  
@@ -25,52 +17,67 @@
             appId: "1:536643428878:web:b9527baf1828015b0a525f"  
         };  
 
-      // Initialize Firebase
-      const app = firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
+        // Import Firebase modules  
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js";  
+        import { getFirestore, collection, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js";  
 
-      async function loadCars() {
-        const carsSnapshot = await db.collection("cars").get();
-        const carList = document.getElementById("carList");
+        // Initialize Firebase  
+        const app = initializeApp(firebaseConfig);  
+        const db = getFirestore(app);  
 
-        carsSnapshot.forEach((doc) => {
-          const car = doc.data();
-          const carDiv = document.createElement("div");
-          carDiv.innerHTML = `  
-                  <h3>${car.make} ${car.model} (${car.year}) - $${car.price}</h3>  
-                  <img src="${car.imageUrl}" alt="Car Image" style="width:200px;height:auto;">  
-                  <input type="text" placeholder="Your Name" id="bidderName-${doc.id}">  
-                  <input type="number" placeholder="Bid Amount" id="bidAmount-${doc.id}">  
-                  <button onclick="placeBid('${doc.id}')">Place Bid</button>  
-                  <hr>  
-              `;
-          carList.appendChild(carDiv);
-        });
-      }
+        async function loadCars() {  
+            try {  
+                const carsSnapshot = await getDocs(collection(db, "cars"));  
+                const carList = document.getElementById("carList");  
 
-      async function placeBid(carId) {
-        const bidderName = document.getElementById(`bidderName-${carId}`).value;
-        const bidAmount = document.getElementById(`bidAmount-${carId}`).value;
+                carsSnapshot.forEach((doc) => {  
+                    const car = doc.data();  
+                    const carDiv = document.createElement("div");  
+                    carDiv.innerHTML = `  
+                        <h3>${car.make} ${car.model} (${car.year}) - $${car.price}</h3>  
+                        <img src="${car.imageUrl}" alt="Car Image" style="width:200px;height:auto;">  
+                        <input type="text" placeholder="Your Name" id="bidderName-${doc.id}">  
+                        <input type="number" placeholder="Bid Amount" id="bidAmount-${doc.id}">  
+                        <button onclick="placeBid('${doc.id}')">Place Bid</button>  
+                        <hr>  
+                    `;  
+                    carList.appendChild(carDiv);  
+                });  
+            } catch (error) {  
+                console.error("Error loading cars:", error);  
+                alert("Failed to load cars. Please try again later.");  
+            }  
+        }  
 
-        if (!bidderName || !bidAmount) {
-          alert("Please enter both your name and a bid amount.");
-          return;
-        }
+        async function placeBid(carId) {  
+            const bidderName = document.getElementById(`bidderName-${carId}`).value;  
+            const bidAmount = document.getElementById(`bidAmount-${carId}`).value;  
 
-        await db
-          .collection("cars")
-          .doc(carId)
-          .update({
-            bids: firebase.firestore.FieldValue.arrayUnion({
-              bidderName,
-              bidAmount: parseFloat(bidAmount),
-            }),
-          });
+            if (!bidderName || !bidAmount) {  
+                alert("Please enter both your name and a bid amount.");  
+                return;  
+            }  
 
-        alert("Bid placed successfully!");
-      }
+            try {  
+                await updateDoc(doc(db, "cars", carId), {  
+                    bids: arrayUnion({  
+                        bidderName,  
+                        bidAmount: parseFloat(bidAmount),  
+                    }),  
+                });  
+                alert("Bid placed successfully!");  
+            } catch (error) {  
+                console.error("Error placing bid:", error);  
+                alert("Failed to place bid. Please try again later.");  
+            }  
+        }  
 
-      loadCars();
-    </script>
-  </body>
+        // Load the cars when the page is loaded  
+        loadCars();  
+    </script>  
+</head>  
+<body>  
+    <h1>Cars for Auction</h1>  
+    <div id="carList"></div>  
+</body>  
 </html>
