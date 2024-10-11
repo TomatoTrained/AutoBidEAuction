@@ -1,29 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin - Upload Car</title>
-    <link rel="stylesheet" href="stylz3.css" />
-    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-storage.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js"></script>
-  </head>
-  <body>
-    <h1>Upload a Car</h1>
-    <form id="carForm">
-      <input type="text" id="make" placeholder="Car Make" required />
-      <input type="text" id="model" placeholder="Car Model" required />
-      <input type="number" id="year" placeholder="Year" required />
-      <input type="number" id="price" placeholder="Price" required />
-      <input type="file" id="image" accept="image/*" required />
-      <button type="submit">Upload Car</button>
-    </form>
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8" />  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+    <title>Admin - Upload Car</title>  
+    <link rel="stylesheet" href="stylz3.css" />  
+</head>  
+<body>  
+    <h1>Upload a Car</h1>  
+    <form id="carForm">  
+        <input type="text" id="make" placeholder="Car Make" required />  
+        <input type="text" id="model" placeholder="Car Model" required />  
+        <input type="number" id="year" placeholder="Year" required />  
+        <input type="number" id="price" placeholder="Price" required />  
+        <input type="file" id="image" accept="image/*" required />  
+        <button type="submit">Upload Car</button>  
+    </form>  
 
-    <script>
-         // Your Firebase configuration  
-      
-       const firebaseConfig = {  
+    <script type="module">  
+        // Import the Firebase modules  
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js";  
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js";  
+        import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-storage.js";  
+
+        // Your Firebase configuration  
+        const firebaseConfig = {  
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",  
             authDomain: "user-login-form-a440d.firebaseapp.com",  
             databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",  
@@ -34,9 +35,9 @@
         };  
 
         // Initialize Firebase  
-        const app = firebase.initializeApp(firebaseConfig);  
-        const db = firebase.firestore();  
-        const storage = firebase.storage();  
+        const app = initializeApp(firebaseConfig);  
+        const db = getFirestore(app);  
+        const storage = getStorage(app);  
 
         document.getElementById('carForm').addEventListener('submit', async (e) => {  
             e.preventDefault();  
@@ -47,24 +48,30 @@
             const price = document.getElementById('price').value;  
             const imageFile = document.getElementById('image').files[0];  
 
-            // Upload image to Firebase Storage  
-            const storageRef = storage.ref(`car-images/${imageFile.name}`);  
-            await storageRef.put(imageFile);  
-            const imageUrl = await storageRef.getDownloadURL();  
+            try {  
+                // Upload image to Firebase Storage  
+                const storageRef = ref(storage, `car-images/${imageFile.name}`);  
+                await uploadString(storageRef, await imageFile.arrayBuffer(), 'data_url');  
+                const imageUrl = await getDownloadURL(storageRef);  
 
-            // Save car information in Firestore  
-            await db.collection('cars').add({  
-                make,  
-                model,  
-                year: parseInt(year),  
-                price: parseFloat(price),  
-                imageUrl,  
-                bids: []  
-            });  
+                // Save car information in Firestore  
+                await addDoc(collection(db, 'cars'), {  
+                    make,  
+                    model,  
+                    year: parseInt(year),  
+                    price: parseFloat(price),  
+                    imageUrl,  
+                    bids: []  
+                });  
+                
+                alert('Car uploaded successfully!');  
+                document.getElementById('carForm').reset();  // Reset form fields  
 
-            alert('Car uploaded successfully!');  
+            } catch (error) {  
+                console.error("Error uploading car:", error);  
+                alert('Failed to upload car. Please try again.');  
+            }  
         });  
-    </script>
-    </script>
-  </body>
+    </script>  
+</body>  
 </html>
