@@ -54,11 +54,15 @@
                 return;  
             }  
 
+            console.log("Uploading:", { make, model, year, price, imageFile });  
+
             try {  
                 // Upload image to Firebase Storage  
                 const storageRef = ref(storage, `car-images/${imageFile.name}`);  
                 await uploadBytes(storageRef, imageFile);  // Using uploadBytes  
                 const imageUrl = await getDownloadURL(storageRef);  
+
+                console.log("Image URL:", imageUrl);  
 
                 // Save car information in Firestore  
                 await addDoc(collection(db, 'cars'), {  
