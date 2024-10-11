@@ -21,7 +21,7 @@
         // Import the Firebase modules  
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js";  
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js";  
-        import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-storage.js";  
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-storage.js";  
 
         // Your Firebase configuration  
         const firebaseConfig = {  
@@ -48,10 +48,16 @@
             const price = document.getElementById('price').value;  
             const imageFile = document.getElementById('image').files[0];  
 
+            // Check if an image file is selected  
+            if (!imageFile) {  
+                alert("Please select an image file.");  
+                return;  
+            }  
+
             try {  
                 // Upload image to Firebase Storage  
                 const storageRef = ref(storage, `car-images/${imageFile.name}`);  
-                await uploadString(storageRef, await imageFile.arrayBuffer(), 'data_url');  
+                await uploadBytes(storageRef, imageFile);  // Using uploadBytes  
                 const imageUrl = await getDownloadURL(storageRef);  
 
                 // Save car information in Firestore  
