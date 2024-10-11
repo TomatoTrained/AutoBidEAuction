@@ -1,18 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <link rel="stylesheet" href="styles5.css" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/ionicons@5.5.2/dist/css/ionicons.min.css"
-    />
-    <title>User Login Page</title>
-    <style></style>
-    <!-- Add Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js"></script>
-    <script>
-      // Your web app's Firebase configuration
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <link rel="stylesheet" href="styles5.css" />  
+    <link rel="stylesheet" href="https://unpkg.com/ionicons@5.5.2/dist/css/ionicons.min.css" />  
+    <title>User Login Page</title>  
+    <style>  
+        /* Use CSS for background as well */  
+        body {  
+            background-image: url('path/to/your/image.jpg');  
+            background-size: cover;  
+            background-position: center;  
+            margin: 0;  
+            height: 100vh;  
+        }  
+        /* You may want to style your login form here */  
+    </style>  
+    <!-- Add Firebase SDK with type="module" -->  
+    <script type="module">  
+        // Import Firebase modules  
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";  
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js";  
+
+        // Your web app's Firebase configuration  
         const firebaseConfig = {  
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",  
             authDomain: "user-login-form-a440d.firebaseapp.com",  
@@ -23,84 +32,97 @@
             appId: "1:536643428878:web:b9527baf1828015b0a525f"  
         };  
 
+        // Initialize Firebase  
+        const app = initializeApp(firebaseConfig);  
+        const auth = getAuth(app);  
 
-      // Initialize Firebase
-      const app = firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
+        // Function to log in  
+        window.loginUser = function(email, password) {  
+            signInWithEmailAndPassword(auth, email, password)  
+                .then((userCredential) => {  
+                    alert("Login successful!");  
+                    window.location.href = "User_Dashboard.html"; // Redirect to user dashboard  
+                })  
+                .catch((error) => {  
+                    const errorCode = error.code;  
+                    let errorMessage = '';  
+                    switch (errorCode) {  
+                        case 'auth/user-not-found':  
+                            errorMessage = 'No user found with this email.';  
+                            break;  
+                        case 'auth/wrong-password':  
+                            errorMessage = 'Incorrect password. Please try again.';  
+                            break;  
+                        case 'auth/invalid-email':  
+                            errorMessage = 'Invalid email format.';  
+                            break;  
+                        default:  
+                            errorMessage = error.message;  
+                            break;  
+                    }  
+                    alert("Error: " + errorMessage);  
+                });  
+        };  
 
-      // Function to log in
-      function loginUser(email, password) {
-        auth
-          .signInWithEmailAndPassword(email, password)
-          .then((userCredential) => {
-            alert("Login successful!");
-            window.location.href = "User_Dashboard.html"; // Replace with your redirect page
-          })
-          .catch((error) => {
-            const errorMessage = error.message;
-            alert("Error: " + errorMessage);
-          });
-      }
+        // Validate form inputs  
+        window.validateForm = function() {  
+            const email = document.getElementById("email").value;  
+            const password = document.getElementById("password").value;  
 
-      function showSignupForm() {
-        window.location.href = "SignUp.html"; // Redirect to signup page
-      }
+            if (!email || !password) {  
+                alert("Please enter both email and password.");  
+                return false; // Prevent form submission  
+            }  
 
-      function validateForm() {
-        var email = document.getElementById("email").value;
-        var password = document.getElementById("password").value;
+            if (password.length < 2) {  
+                alert("Password must be at least 2 characters long.");  
+                return false;  
+            }  
 
-        if (email === "" || password === "") {
-          alert("Please enter both email and password");
-          return false; // Prevent form submission
-        }
+            // Log in the user  
+            loginUser(email, password);  
+            return false; // Prevent actual form submission  
+        };  
 
-        if (password.length < 2) {
-          alert("Password must be at least 2 characters long");
-          return false;
-        }
-
-        // Log in the user
-        loginUser(email, password);
-        return false; // Prevent actual form submission
-      }
-    </script>
-  </head>
-  <body
-    background="C:\Users\Eddywale\Desktop\eAuction System by Tomato_Trained\Pictures and Images\Web Images\IMG-20240712-WA0008.jpg"
-  >
-    <section>
-      <div id="loginForm" class="form-box">
-        <div class="form-value">
-          <form onsubmit="return validateForm()">
-            <h2>Login</h2>
-            <div class="inputbox">
-              <ion-icon name="person"></ion-icon>
-              <input type="email" id="email" name="email" required />
-              <label for="email">User</label>
-            </div>
-            <div class="inputbox">
-              <ion-icon name="lock-closed"></ion-icon>
-              <input type="password" id="password" name="password" required />
-              <label for="password">Password</label>
-            </div>
-            <div class="forget">
-              <label for="remember">
-                <input type="checkbox" id="remember" /> Remember
-                <a href="#">Forgot my Password</a>
-              </label>
-            </div>
-            <button type="submit">Log In</button>
-            <br /><br />
-            <div class="register">
-              <p>
-                I don't have an account
-                <a href="#" onclick="showSignupForm()">Sign Up</a>
-              </p>
-            </div>
-          </form>
-        </div>
-      </div>
-    </section>
-  </body>
+        // Redirect to Signup form  
+        window.showSignupForm = function() {  
+            window.location.href = "SignUp.html"; // Redirect to signup page  
+        };  
+    </script>  
+</head>  
+<body>  
+    <section>  
+        <div id="loginForm" class="form-box">  
+            <div class="form-value">  
+                <form onsubmit="return validateForm()">  
+                    <h2>Login</h2>  
+                    <div class="inputbox">  
+                        <ion-icon name="person"></ion-icon>  
+                        <input type="email" id="email" name="email" required />  
+                        <label for="email">User</label>  
+                    </div>  
+                    <div class="inputbox">  
+                        <ion-icon name="lock-closed"></ion-icon>  
+                        <input type="password" id="password" name="password" required />  
+                        <label for="password">Password</label>  
+                    </div>  
+                    <div class="forget">  
+                        <label for="remember">  
+                            <input type="checkbox" id="remember" /> Remember  
+                            <a href="#">Forgot my Password</a>  
+                        </label>  
+                    </div>  
+                    <button type="submit">Log In</button>  
+                    <br /><br />  
+                    <div class="register">  
+                        <p>  
+                            I don't have an account  
+                            <a href="#" onclick="showSignupForm()">Sign Up</a>  
+                        </p>  
+                    </div>  
+                </form>  
+            </div>  
+        </div>  
+    </section>  
+</body>  
 </html>
