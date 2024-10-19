@@ -1,64 +1,66 @@
 <!DOCTYPE html>  
 <html lang="en">  
-  <head>  
+<head>  
     <meta charset="UTF-8" />  
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
     <title>Admin Upload Calendar</title>  
     <link rel="stylesheet" href="stylz2.css" />  
     <script type="module">  
-      // Import necessary Firebase functions  
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";  
-      import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";  
-      import { getDatabase, ref as dbRef, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";  
+        // Import necessary Firebase functions  
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";  
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";  
+        import { getDatabase, ref as dbRef, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";  
 
-      // Your Firebase configuration   
-
-       const firebaseConfig = {  
-            apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",  
-            authDomain: "user-login-form-a440d.firebaseapp.com",  
-            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",  
-            projectId: "user-login-form-a440d",  
-            storageBucket: "user-login-form-a440d.appspot.com",  
-            messagingSenderId: "536643428878",  
-            appId: "1:536643428878:web:b9527baf1828015b0a525f"  
+        // Your Firebase configuration  
+        const firebaseConfig = {  
+            apiKey: "YOUR_API_KEY",  
+            authDomain: "YOUR_AUTH_DOMAIN",  
+            databaseURL: "YOUR_DATABASE_URL",  
+            projectId: "YOUR_PROJECT_ID",  
+            storageBucket: "YOUR_STORAGE_BUCKET",  
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",  
+            appId: "YOUR_APP_ID",  
         };  
 
+        // Initialize Firebase  
+        const app = initializeApp(firebaseConfig);  
+        const storage = getStorage(app);  
+        const database = getDatabase(app);  
 
-      // Initialize Firebase  
-      const app = initializeApp(firebaseConfig);  
-      const storage = getStorage(app);  
-      const database = getDatabase(app);  
+        document.addEventListener("DOMContentLoaded", function () {  
+            document.getElementById("uploadButton").addEventListener("click", async function () {  
+                const file = document.getElementById("fileInput").files[0];  
+                if (!file) {  
+                    alert("Please select a file first.");  
+                    return;  
+                }  
 
-      document.addEventListener("DOMContentLoaded", function () {  
-        document.getElementById("uploadButton").addEventListener("click", async function () {  
-          const file = document.getElementById("fileInput").files[0];  
-          if (!file) {  
-            alert("Please select a file first.");  
-            return;  
-          }  
+                // Sanitize the file name by replacing illegal characters  
+                const fileName = file.name;  
+                const sanitizedFileName = fileName.replace(/[.#$\[\] ]/g, "_"); // Replace invalid characters  
 
-          const fileRef = storageRef(storage, "calendars/" + file.name);  
-          try {  
-            await uploadBytes(fileRef, file);  
-            const downloadURL = await getDownloadURL(fileRef);  
-            await set(dbRef(database, "calendars/" + file.name), {  
-              url: downloadURL,  
-              name: file.name,  
+                const fileRef = storageRef(storage, "calendars/" + sanitizedFileName);  
+                try {  
+                    await uploadBytes(fileRef, file);  
+                    const downloadURL = await getDownloadURL(fileRef);  
+                    await set(dbRef(database, "calendars/" + sanitizedFileName), {  
+                        url: downloadURL,  
+                        name: sanitizedFileName,  
+                    });  
+                    alert("Upload successful!");  
+                } catch (error) {  
+                    console.error(error);  
+                    alert("Upload failed! " + error.message);  
+                }  
             });  
-            alert("Upload successful!");  
-          } catch (error) {  
-            console.error(error);  
-            alert("Upload failed! " + error.message);  
-          }  
         });  
-      });  
     </script>  
-  </head>  
-  <body>  
+</head>  
+<body>  
     <div class="container">  
-      <h1>Upload Calendar PDF</h1>  
-      <input type="file" id="fileInput" accept="application/pdf" />  
-      <button id="uploadButton">Upload</button>  
+        <h1>Upload Calendar PDF</h1>  
+        <input type="file" id="fileInput" accept="application/pdf" />  
+        <button id="uploadButton">Upload</button>  
     </div>  
-  </body>  
+</body>  
 </html>
