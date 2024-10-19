@@ -1,22 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Download Calendar</title>
-    <link rel="stylesheet" href="stylz.css" />
-    <!-- Link to external CSS file -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <h1>Annual Auction Catalogue</h1>
-      <div id="catalogueLinks" class="catalogue-links"></div>
-    </div>
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8" />  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+    <title>User Download Calendar</title>  
+    <link rel="stylesheet" href="stylz.css" />  
+    <script type="module">  
+        // Import necessary Firebase functions  
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";  
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";  
 
-    <script>
-      // Your Firebase configuration
+        // Your Firebase configuration  
         const firebaseConfig = {  
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",  
             authDomain: "user-login-form-a440d.firebaseapp.com",  
@@ -27,24 +21,34 @@
             appId: "1:536643428878:web:b9527baf1828015b0a525f"  
         };  
 
-      // Initialize Firebase
-      const app = firebase.initializeApp(firebaseConfig);
-      const database = firebase.database();
+        // Initialize Firebase  
+        const app = initializeApp(firebaseConfig);  
+        const database = getDatabase(app);  
 
-      // Fetch calendar links from the database
-      database.ref("calendars/").on("value", function (snapshot) {
-        const catalogueLinks = document.getElementById("catalogueLinks");
-        catalogueLinks.innerHTML = ""; // Clear existing links
+        // Fetch calendar links from the database  
+        const catalogueLinks = document.getElementById("catalogueLinks");  
+        
+        // Listen for changes in the "calendars" node  
+        const calendarsRef = ref(database, "calendars/");  
+        onValue(calendarsRef, (snapshot) => {  
+            catalogueLinks.innerHTML = ""; // Clear existing links  
 
-        snapshot.forEach(function (childSnapshot) {
-          const data = childSnapshot.val();
-          const link = document.createElement("a");
-          link.href = data.url;
-          link.download = data.name; // Set the download attribute
-          link.textContent = `Download ${data.name}`;
-          catalogueLinks.appendChild(link);
-        });
-      });
-    </script>
-  </body>
+            snapshot.forEach((childSnapshot) => {  
+                const data = childSnapshot.val();  
+                const link = document.createElement("a");  
+                link.href = data.url;  
+                link.download = data.name; // Set the download attribute  
+                link.textContent = `Download ${data.name}`;  
+                catalogueLinks.appendChild(link);  
+                catalogueLinks.appendChild(document.createElement("br")); // Add line breaks for better readability  
+            });  
+        });  
+    </script>  
+</head>  
+<body>  
+    <div class="container">  
+        <h1>Annual Auction Catalogue</h1>  
+        <div id="catalogueLinks" class="catalogue-links"></div>  
+    </div>  
+</body>  
 </html>
