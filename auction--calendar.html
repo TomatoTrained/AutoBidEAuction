@@ -3,19 +3,12 @@
 <head>  
     <meta charset="UTF-8" />  
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
-    <title>User Download Calendar</title>  
-    <link rel="stylesheet" href="stylz.css" />  
-</head>  
-<body>  
-    <div class="container">  
-        <h1>Annual Auction Catalogue</h1>  
-        <div id="catalogueLinks" class="catalogue-links"></div>  
-    </div>  
-
+    <title>User Calendar Downloads</title>  
+    <link rel="stylesheet" href="stylz2.css" />  
     <script type="module">  
         // Import necessary Firebase functions  
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";  
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";  
+        import { getDatabase, ref as dbRef, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";  
 
         // Your Firebase configuration  
         const firebaseConfig = {  
@@ -32,24 +25,31 @@
         const app = initializeApp(firebaseConfig);  
         const database = getDatabase(app);  
 
-        // Fetch calendar links from the database  
-        const catalogueLinks = document.getElementById("catalogueLinks");  
-        
-        // Listen for changes in the "calendars" node  
-        const calendarsRef = ref(database, "calendars/");  
-        onValue(calendarsRef, (snapshot) => {  
-            catalogueLinks.innerHTML = ""; // Clear existing links  
-
-            snapshot.forEach((childSnapshot) => {  
-                const data = childSnapshot.val();  
-                const link = document.createElement("a");  
-                link.href = data.url;  
-                link.download = data.name; // Set the download attribute  
-                link.textContent = `Download ${data.name}`;  
-                catalogueLinks.appendChild(link);  
-                catalogueLinks.appendChild(document.createElement("br")); // Add line breaks for better readability  
+        document.addEventListener("DOMContentLoaded", function () {  
+            const catalogueLinks = document.getElementById("catalogueLinks");  
+            
+            // Reference to the "calendars" node in the database  
+            const calendarsRef = dbRef(database, "calendars/");  
+            onValue(calendarsRef, (snapshot) => {  
+                catalogueLinks.innerHTML = ""; // Clear existing links  
+                
+                snapshot.forEach((childSnapshot) => {  
+                    const data = childSnapshot.val();  
+                    const link = document.createElement("a");  
+                    link.href = data.url;  // URL for downloading  
+                    link.download = data.name; // Suggest name for download  
+                    link.textContent = `Download ${data.name}`;  
+                    catalogueLinks.appendChild(link);  
+                    catalogueLinks.appendChild(document.createElement("br")); // Line breaks for readability  
+                });  
             });  
         });  
     </script>  
+</head>  
+<body>  
+    <div class="container">  
+        <h1>Available Calendars for Download</h1>  
+        <div id="catalogueLinks"></div> <!-- Place to display the links -->  
+    </div>  
 </body>  
 </html>
