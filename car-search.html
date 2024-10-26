@@ -25,6 +25,9 @@
         const app = initializeApp(firebaseConfig);  
         const db = getFirestore(app);  
 
+        // Object to track emails that have placed bids  
+        const existingBids = {};  
+
         async function loadCars() {  
             try {  
                 const carsSnapshot = await getDocs(collection(db, "cars"));  
@@ -36,13 +39,13 @@
                     carDiv.innerHTML = `  
                         <h3>${car.make} ${car.model} (${car.year}) - $${car.price}</h3>  
                         <img src="${car.imageUrl}" alt="Car Image" style="width:200px;height:auto;">  
-                        <input type="text" placeholder="Your Name" id="bidderName-${doc.id}">  
-                        <input type="number" placeholder="Bid Amount" id="bidAmount-${doc.id}">  
+                        <input type="email" placeholder="Your Email" id="bidderEmail-${doc.id}" required>  
+                        <input type="number" placeholder="Bid Amount" id="bidAmount-${doc.id}" required>  
                         <button id="bidButton-${doc.id}">Place Bid</button>  
                         <hr>  
                     `;  
                     carList.appendChild(carDiv);  
-                    
+
                     // Add event listener for the button  
                     document.getElementById(`bidButton-${doc.id}`).addEventListener("click", () => placeBid(doc.id));  
                 });  
@@ -53,21 +56,30 @@
         }  
 
         async function placeBid(carId) {  
-            const bidderName = document.getElementById(`bidderName-${carId}`).value;  
+            const bidderEmail = document.getElementById(`bidderEmail-${carId}`).value;  
             const bidAmount = document.getElementById(`bidAmount-${carId}`).value;  
 
-            if (!bidderName || !bidAmount) {  
-                alert("Please enter both your name and a bid amount.");  
+            if (!bidderEmail || !bidAmount) {  
+                alert("Please enter both your email and a bid amount.");  
                 return;  
+            }  
+
+            // Check if the email has already placed a bid  
+            if (existingBids[bidderEmail]) {  
+                const userConfirmed = confirm("You have already placed a bid with this email. Would you like to bid again?");  
+                if (!userConfirmed) {  
+                    return; // Exit if the user does not confirm  
+                }  
             }  
 
             try {  
                 await updateDoc(doc(db, "cars", carId), {  
                     bids: arrayUnion({  
-                        bidderName,  
+                        bidderEmail,  
                         bidAmount: parseFloat(bidAmount),  
                     }),  
                 });  
+                existingBids[bidderEmail] = true; // Mark the email as having placed a bid  
                 alert("Bid placed successfully!");  
             } catch (error) {  
                 console.error("Error placing bid:", error);  
