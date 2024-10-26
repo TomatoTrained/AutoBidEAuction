@@ -36,6 +36,7 @@
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js';
         import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-auth.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -51,6 +52,7 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         // Fetch and display my bids
         async function getMyBids(bidderEmail) {
@@ -61,9 +63,9 @@
             carsSnapshot.forEach((doc) => {
                 const car = doc.data();
                 const bids = car.bids || [];
-                
+
                 bids.forEach(bid => {
-                    if (bid.bidderEmail === bidderEmail) {
+                    if (bid.bidderEmail.trim().toLowerCase() === bidderEmail.trim().toLowerCase()) {
                         myBids.push({
                             car: car,
                             bidAmount: bid.bidAmount,
@@ -98,10 +100,16 @@
             });
         }
 
-        // Call functions on page load
-        const bidderEmail = "YOUR_EMAIL"; // Replace with the actual logged-in user's email
-        console.log("Querying bids for email:", bidderEmail); // Log the email being queried
-        getMyBids(bidderEmail);
+        // Check authentication state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const bidderEmail = user.email; // Get the logged-in user's email
+                getMyBids(bidderEmail); // Call the function with the user's email
+            } else {
+                console.log("No user is signed in.");
+                // Optionally redirect to a login page or show an error message
+            }
+        });
     </script>
 </body>
 </html>
