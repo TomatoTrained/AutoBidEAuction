@@ -35,7 +35,7 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js';
-        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -54,37 +54,46 @@
 
         // Fetch and display my bids
         async function getMyBids(bidderEmail) {
-            const bidsQuery = query(collection(db, "cars"), where("bids", "array-contains", { bidderEmail }));
+            const carsSnapshot = await getDocs(collection(db, "cars"));
+            const myBids = [];
 
-            const querySnapshot = await getDocs(bidsQuery);
-            displayMyBids(querySnapshot);
+            carsSnapshot.forEach((doc) => {
+                const car = doc.data();
+                const bids = car.bids || [];
+                
+                bids.forEach(bid => {
+                    if (bid.bidderEmail === bidderEmail) {
+                        myBids.push({
+                            car: car,
+                            bidAmount: bid.bidAmount,
+                            date: bid.date,
+                        });
+                    }
+                });
+            });
+
+            displayMyBids(myBids);
         }
 
-        function displayMyBids(querySnapshot) {
+        function displayMyBids(myBids) {
             const container = document.getElementById("my-bids-container");
             container.innerHTML = "";
 
-            if (querySnapshot.empty) {
+            if (myBids.length === 0) {
                 container.innerText = "No bids placed.";
                 return;
             }
 
-            querySnapshot.forEach((doc) => {
-                const car = doc.data();
-                const bids = car.bids || [];
-                bids.forEach(bid => {
-                    if (bid.bidderEmail === bidderEmail) {
-                        const bidElement = document.createElement("div");
-                        bidElement.classList.add("bid");
-                        bidElement.innerHTML = `
-                            <strong>Car:</strong> ${car.make} ${car.model}<br>
-                            <strong>Bid Amount:</strong> $${bid.bidAmount}<br>
-                            <strong>Date:</strong> ${new Date(bid.date).toLocaleString()}<br>
-                            <hr>
-                        `;
-                        container.appendChild(bidElement);
-                    }
-                });
+            myBids.forEach(bid => {
+                const bidElement = document.createElement("div");
+                bidElement.classList.add("bid");
+                bidElement.innerHTML = `
+                    <strong>Car:</strong> ${bid.car.make} ${bid.car.model}<br>
+                    <strong>Bid Amount:</strong> $${bid.bidAmount}<br>
+                    <strong>Date:</strong> ${new Date(bid.date).toLocaleString()}<br>
+                    <hr>
+                `;
+                container.appendChild(bidElement);
             });
         }
 
