@@ -54,6 +54,7 @@
 
         // Fetch and display my bids
         async function getMyBids(bidderEmail) {
+            console.log("Querying bids for email:", bidderEmail); // Log the email being queried
             const carsSnapshot = await getDocs(collection(db, "cars"));
             const myBids = [];
 
@@ -99,6 +100,7 @@
 
         // Call functions on page load
         const bidderEmail = "YOUR_EMAIL"; // Replace with the actual logged-in user's email
+        console.log("Querying bids for email:", bidderEmail); // Log the email being queried
         getMyBids(bidderEmail);
     </script>
 </body>
