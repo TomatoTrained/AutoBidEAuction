@@ -34,10 +34,10 @@
 
     <script type="module">
         // Import Firebase modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getDatabase, ref, query, orderByChild, equalTo, onValue } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js';
+        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
 
-        // Firebase configuration (replace with your Firebase project config)
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
             authDomain: "user-login-form-a440d.firebaseapp.com",
@@ -50,45 +50,47 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+        const db = getFirestore(app);
 
         // Fetch and display my bids
-        function getMyBids(userId) {
-            const bidsRef = ref(database, 'bids');
-            const bidsQuery = query(bidsRef, orderByChild('userId'), equalTo(userId));
+        async function getMyBids(bidderEmail) {
+            const bidsQuery = query(collection(db, "cars"), where("bids", "array-contains", { bidderEmail }));
 
-            onValue(bidsQuery, (snapshot) => {
-                const myBids = snapshot.val();
-                displayMyBids(myBids);
-            });
+            const querySnapshot = await getDocs(bidsQuery);
+            displayMyBids(querySnapshot);
         }
 
-        function displayMyBids(myBids) {
+        function displayMyBids(querySnapshot) {
             const container = document.getElementById("my-bids-container");
             container.innerHTML = "";
 
-            if (myBids && Object.keys(myBids).length > 0) {
-                Object.keys(myBids).forEach(bidId => {
-                    const bid = myBids[bidId];
-                    const bidElement = document.createElement("div");
-                    bidElement.classList.add("bid");
-                    bidElement.innerHTML = `
-                        <strong>Bid ID:</strong> ${bidId}<br>
-                        <strong>Amount:</strong> $${bid.amount}<br>
-                        <strong>Item:</strong> ${bid.item}<br>
-                        <strong>Date:</strong> ${new Date(bid.date).toLocaleString()}<br>
-                        <hr>
-                    `;
-                    container.appendChild(bidElement);
-                });
-            } else {
+            if (querySnapshot.empty) {
                 container.innerText = "No bids placed.";
+                return;
             }
+
+            querySnapshot.forEach((doc) => {
+                const car = doc.data();
+                const bids = car.bids || [];
+                bids.forEach(bid => {
+                    if (bid.bidderEmail === bidderEmail) {
+                        const bidElement = document.createElement("div");
+                        bidElement.classList.add("bid");
+                        bidElement.innerHTML = `
+                            <strong>Car:</strong> ${car.make} ${car.model}<br>
+                            <strong>Bid Amount:</strong> $${bid.bidAmount}<br>
+                            <strong>Date:</strong> ${new Date(bid.date).toLocaleString()}<br>
+                            <hr>
+                        `;
+                        container.appendChild(bidElement);
+                    }
+                });
+            });
         }
 
         // Call functions on page load
-        const userId = "YOUR_USER_ID"; // Replace with the actual logged-in user's ID
-        getMyBids(userId);
+        const bidderEmail = "YOUR_EMAIL"; // Replace with the actual logged-in user's email
+        getMyBids(bidderEmail);
     </script>
 </body>
 </html>
