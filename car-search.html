@@ -1,98 +1,101 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-    <meta charset="UTF-8" />  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
-    <title>User - View Cars and Place Bids</title>  
-    <link rel="stylesheet" href="stylz3.css" />  
-    <script type="module">  
-        // Your Firebase configuration  
-        const firebaseConfig = {  
-            apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",  
-            authDomain: "user-login-form-a440d.firebaseapp.com",  
-            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",  
-            projectId: "user-login-form-a440d",  
-            storageBucket: "user-login-form-a440d.appspot.com",  
-            messagingSenderId: "536643428878",  
-            appId: "1:536643428878:web:b9527baf1828015b0a525f"  
-        };  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User - View Cars and Place Bids</title>
+    <link rel="stylesheet" href="stylz3.css" />
+    <script type="module">
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
+            authDomain: "user-login-form-a440d.firebaseapp.com",
+            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
+            projectId: "user-login-form-a440d",
+            storageBucket: "user-login-form-a440d.appspot.com",
+            messagingSenderId: "536643428878",
+            appId: "1:536643428878:web:b9527baf1828015b0a525f"
+        };
 
-        // Import Firebase modules  
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js";  
-        import { getFirestore, collection, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js";  
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js";
 
-        // Initialize Firebase  
-        const app = initializeApp(firebaseConfig);  
-        const db = getFirestore(app);  
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-        // Object to track emails that have placed bids  
-        const existingBids = {};  
+        // Object to track emails that have placed bids
+        const existingBids = {};
 
-        async function loadCars() {  
-            try {  
-                const carsSnapshot = await getDocs(collection(db, "cars"));  
-                const carList = document.getElementById("carList");  
+        async function loadCars() {
+            try {
+                const carsSnapshot = await getDocs(collection(db, "cars"));
+                const carList = document.getElementById("carList");
 
-                carsSnapshot.forEach((doc) => {  
-                    const car = doc.data();  
-                    const carDiv = document.createElement("div");  
-                    carDiv.innerHTML = `  
-                        <h3>${car.make} ${car.model} (${car.year}) - $${car.price}</h3>  
-                        <img src="${car.imageUrl}" alt="Car Image" style="width:200px;height:auto;">  
-                        <input type="email" placeholder="Your Email" id="bidderEmail-${doc.id}" required>  
-                        <input type="number" placeholder="Bid Amount" id="bidAmount-${doc.id}" required>  
-                        <button id="bidButton-${doc.id}">Place Bid</button>  
-                        <hr>  
-                    `;  
-                    carList.appendChild(carDiv);  
+                carsSnapshot.forEach((doc) => {
+                    const car = doc.data();
+                    const carDiv = document.createElement("div");
+                    carDiv.innerHTML = `
+                        <h3>${car.make} ${car.model} (${car.year}) - $${car.price}</h3>
+                        <img src="${car.imageUrl}" alt="Car Image" style="width:200px;height:auto;">
+                        <input type="email" placeholder="Your Email" id="bidderEmail-${doc.id}" required>
+                        <input type="number" placeholder="Bid Amount" id="bidAmount-${doc.id}" required>
+                        <button id="bidButton-${doc.id}">Place Bid</button>
+                        <hr>
+                    `;
+                    carList.appendChild(carDiv);
 
-                    // Add event listener for the button  
-                    document.getElementById(`bidButton-${doc.id}`).addEventListener("click", () => placeBid(doc.id));  
-                });  
-            } catch (error) {  
-                console.error("Error loading cars:", error);  
-                alert("Failed to load cars. Please try again later.");  
-            }  
-        }  
+                    // Add event listener for the button
+                    document.getElementById(`bidButton-${doc.id}`).addEventListener("click", () => placeBid(doc.id, car));
+                });
+            } catch (error) {
+                console.error("Error loading cars:", error);
+                alert("Failed to load cars. Please try again later.");
+            }
+        }
 
-        async function placeBid(carId) {  
-            const bidderEmail = document.getElementById(`bidderEmail-${carId}`).value;  
-            const bidAmount = document.getElementById(`bidAmount-${carId}`).value;  
+        async function placeBid(carId, car) {
+            const bidderEmail = document.getElementById(`bidderEmail-${carId}`).value;
+            const bidAmount = document.getElementById(`bidAmount-${carId}`).value;
 
-            if (!bidderEmail || !bidAmount) {  
-                alert("Please enter both your email and a bid amount.");  
-                return;  
-            }  
+            if (!bidderEmail || !bidAmount) {
+                alert("Please enter both your email and a bid amount.");
+                return;
+            }
 
-            // Check if the email has already placed a bid  
-            if (existingBids[bidderEmail]) {  
-                const userConfirmed = confirm("You have already placed a bid with this email. Would you like to bid again?");  
-                if (!userConfirmed) {  
-                    return; // Exit if the user does not confirm  
-                }  
-            }  
+            // Check if the email has already placed a bid
+            if (existingBids[bidderEmail]) {
+                const userConfirmed = confirm("You have already placed a bid with this email. Would you like to bid again?");
+                if (!userConfirmed) {
+                    return; // Exit if the user does not confirm
+                }
+            }
 
-            try {  
-                await updateDoc(doc(db, "cars", carId), {  
-                    bids: arrayUnion({  
-                        bidderEmail,  
-                        bidAmount: parseFloat(bidAmount),  
-                    }),  
-                });  
-                existingBids[bidderEmail] = true; // Mark the email as having placed a bid  
-                alert("Bid placed successfully!");  
-            } catch (error) {  
-                console.error("Error placing bid:", error);  
-                alert("Failed to place bid. Please try again later.");  
-            }  
-        }  
+            try {
+                // Update Firestore
+                await updateDoc(doc(db, "cars", carId), {
+                    bids: arrayUnion({
+                        bidderEmail,
+                        bidAmount: parseFloat(bidAmount),
+                        date: new Date().toISOString(),
+                    }),
+                });
 
-        // Load the cars when the page is loaded  
-        loadCars();  
-    </script>  
-</head>  
-<body>  
-    <h1>Cars for Auction</h1>  
-    <div id="carList"></div>  
-</body>  
+                existingBids[bidderEmail] = true; // Mark the email as having placed a bid
+                alert("Bid placed successfully!");
+            } catch (error) {
+                console.error("Error placing bid:", error);
+                alert("Failed to place bid. Please try again later.");
+            }
+        }
+
+        // Load the cars when the page is loaded
+        loadCars();
+    </script>
+</head>
+<body>
+    <h1>Cars for Auction</h1>
+    <div id="carList"></div>
+</body>
 </html>
