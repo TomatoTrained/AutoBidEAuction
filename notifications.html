@@ -1,98 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Notifications Page</title>
-    <style>
-        .notification:last-child {
-            border-bottom: none;
-        }
-        .notification {
-            padding: 10px;
-            border-bottom: 1px solid #ccc;
-        }
-        h1 {
-            color: green;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            background-color: white;
-        }
-    </style>
-</head>
-<body>
-    <h1>Notifications</h1>
-    <div id="notifications-container"></div>
-    <div id="highest-bidder-amount"></div>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js";
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
-        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js";
+    const firebaseConfig = {
+        apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
+        authDomain: "user-login-form-a440d.firebaseapp.com",
+        databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
+        projectId: "user-login-form-a440d",
+        storageBucket: "user-login-form-a440d.appspot.com",
+        messagingSenderId: "536643428878",
+        appId: "1:536643428878:web:b9527baf1828015b0a525f",
+        measurementId: "G-8DP3R6WJYB"
+    };
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
-            authDomain: "user-login-form-a440d.firebaseapp.com",
-            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
-            projectId: "user-login-form-a440d",
-            storageBucket: "user-login-form-a440d.appspot.com",
-            messagingSenderId: "536643428878",
-            appId: "1:536643428878:web:b9527baf1828015b0a525f",
-            measurementId: "G-8DP3R6WJYB"
-        };
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const messaging = getMessaging(app);
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const messaging = getMessaging(app);
-
-        Notification.requestPermission().then((permission) => {
-            if (permission === 'granted') {
-                console.log('Notification permission granted.');
-                getFCMToken();
-            } else {
-                console.log('Unable to get permission to notify.');
-            }
-        });
-
-        function getFCMToken() {
-            getToken(messaging, { vapidKey: 'YOUR_VAPID_PUBLIC_KEY' }).then((currentToken) => {
-                if (currentToken) {
-                    console.log('FCM Token:', currentToken);
-                    // Send this token to your server to send notifications
+    function handleNotificationPermission() {
+        if (Notification.permission === 'granted') {
+            getFCMToken();
+        } else if (Notification.permission === 'denied') {
+            showPermissionBlockedMessage();
+        } else {
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    getFCMToken();
                 } else {
-                    console.log('No registration token available. Request permission to generate one.');
+                    showPermissionBlockedMessage();
                 }
-            }).catch((err) => {
-                console.log('An error occurred while retrieving token. ', err);
             });
         }
+    }
 
-        onMessage(messaging, (payload) => {
-            console.log('Message received. ', payload);
-            displayNotification(payload.notification);
-        });
+    function showPermissionBlockedMessage() {
+        const container = document.getElementById("notifications-container");
+        const message = document.createElement("div");
+        message.textContent = "Notifications are blocked. Please enable them in your browser settings.";
+        message.style.color = "red";
+        message.style.fontWeight = "bold";
+        container.appendChild(message);
+    }
 
-        function displayNotification(notification) {
-            const container = document.getElementById("notifications-container");
-            const notificationElement = document.createElement("div");
-            notificationElement.textContent = notification.body; 
-            notificationElement.classList.add("notification");
-            container.appendChild(notificationElement);
-        }
-
-        const highestBidderAmountElement = document.getElementById('highest-bidder-amount');
-        const bidsRef = ref(database, 'bids');
-
-        onValue(bidsRef, (snapshot) => {
-            const bids = snapshot.val();
-            if (bids && Object.keys(bids).length > 0) {
-                const highestBidderAmount = Math.max(...Object.values(bids));
-                highestBidderAmountElement.innerText = `Highest Bidder Amount: $${highestBidderAmount}`;
+    function getFCMToken() {
+        getToken(messaging, { vapidKey: 'YOUR_VAPID_PUBLIC_KEY' }).then((currentToken) => {
+            if (currentToken) {
+                console.log('FCM Token:', currentToken);
             } else {
-                highestBidderAmountElement.innerText = "No bids available.";
+                console.log('No registration token available. Request permission to generate one.');
             }
+        }).catch((err) => {
+            console.log('An error occurred while retrieving token. ', err);
         });
-    </script>
-</body>
-</html>
+    }
+
+    onMessage(messaging, (payload) => {
+        console.log('Message received. ', payload);
+        displayNotification(payload.notification);
+    });
+
+    function displayNotification(notification) {
+        const container = document.getElementById("notifications-container");
+        const notificationElement = document.createElement("div");
+        notificationElement.textContent = notification.body; 
+        notificationElement.classList.add("notification");
+        container.appendChild(notificationElement);
+    }
+
+    const highestBidderAmountElement = document.getElementById('highest-bidder-amount');
+    const bidsRef = ref(database, 'bids');
+
+    onValue(bidsRef, (snapshot) => {
+        const bids = snapshot.val();
+        if (bids && Object.keys(bids).length > 0) {
+            const highestBidderAmount = Math.max(...Object.values(bids));
+            highestBidderAmountElement.innerText = `Highest Bidder Amount: $${highestBidderAmount}`;
+        } else {
+            highestBidderAmountElement.innerText = "No bids available.";
+        }
+    });
+
+    // Call the permission handler function
+    handleNotificationPermission();
+</script>
