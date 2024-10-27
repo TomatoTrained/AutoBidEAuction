@@ -4,130 +4,128 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bidder Approval</title>
-    <script type="module">
-      // Import Firebase App and Firestore from CDN
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
-      import { getFirestore, collection, getDocs, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
-
-      // Your web app's Firebase configuration
-      const firebaseConfig = {
-          apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
-          authDomain: "user-login-form-a440d.firebaseapp.com",
-          databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
-          projectId: "user-login-form-a440d",
-          storageBucket: "user-login-form-a440d.appspot.com",
-          messagingSenderId: "536643428878",
-          appId: "1:536643428878:web:b9527baf1828015b0a525f",
-      };
-
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-
-      async function loadBidders() {
-          const bidderList = document.getElementById("bidderList");
-          const querySnapshot = await getDocs(collection(db, "bidders"));
-          bidderList.innerHTML = ""; // Clear the list
-
-          for (const docSnapshot of querySnapshot.docs) {
-              const bidder = docSnapshot.data();
-              console.log("Bidder data:", bidder); // Debugging: log bidder data
-
-              if (bidder.carId) {
-                  const carDoc = await getDoc(doc(db, "cars", bidder.carId)); // Fetch car details using carId
-                  const car = carDoc.data();
-                  console.log("Car data:", car); // Debugging: log car data
-
-                  const bidderDiv = document.createElement("div");
-                  bidderDiv.classList.add("bidder");
-                  bidderDiv.innerHTML = `
-                      <p>${bidder.email} - ${car ? car.make + ' ' + car.model : 'Car not found'}</p>
-                      <button onclick="approveBidder('${docSnapshot.id}', '${bidder.email}')">Approve</button>
-                      <button onclick="selectWinner('${docSnapshot.id}')">Select Winner</button>
-                  `;
-                  bidderList.appendChild(bidderDiv);
-              } else {
-                  console.warn("Bidder missing carId:", bidder); // Log a warning if carId is missing
-              }
-          }
-      }
-
-      async function approveBidder(bidderId, bidderEmail) {
-          const bidderRef = doc(db, "bidders", bidderId);
-          await updateDoc(bidderRef, { approved: true });
-          alert("Bidder approved!");
-          await sendNotification(bidderEmail, "Your bid has been approved!"); // Send notification
-          loadBidders(); // Refresh the list
-      }
-
-      async function sendNotification(email, message) {
-          const notification = {
-              email: email,
-              message: message,
-              timestamp: new Date(),
-          };
-          // Add to notifications collection
-          await setDoc(doc(db, "notifications", email), notification);
-      }
-
-      async function selectWinner(bidderId) {
-          const winnerDoc = await getDoc(doc(db, "bidders", bidderId));
-          const winner = winnerDoc.data();
-
-          if (winner && winner.approved) {
-              alert(`${winner.email} has been selected as the winner!`);
-          } else {
-              alert("You must approve the bidder before selecting them as a winner.");
-          }
-      }
-
-      window.onload = loadBidders;
-    </script>
     <style>
-      body {
-          font-family: "Arial", sans-serif;
-          background-color: #f5f5f5;
-          margin: 0;
-          padding: 20px;
-          color: #333;
-      }
-      h1 {
-          text-align: center;
-          color: #4caf50;
-      }
-      #bidderList {
-          max-width: 600px;
-          margin: auto;
-          padding: 10px;
-          background: white;
-          border-radius: 5px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-      .bidder {
-          display: flex;
-          justify-content: space-between;
-          padding: 10px;
-          border-bottom: 1px solid #ddd;
-      }
-      .bidder:last-child {
-          border-bottom: none;
-      }
-      button {
-          background-color: #4caf50;
-          color: white;
-          border: none;
-          padding: 8px 12px;
-          border-radius: 4px;
-          cursor: pointer;
-          transition: background-color 0.3s;
-      }
-      button:hover {
-          background-color: #45a049;
-      }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: green;
+            text-align: center;
+        }
+        .bid {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
     <h1>Bidder Approval</h1>
-    <div id="bidderList"></div>
+    <div id="bids-container"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
+            authDomain: "user-login-form-a440d.firebaseapp.com",
+            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
+            projectId: "user-login-form-a440d",
+            storageBucket: "user-login-form-a440d.appspot.com",
+            messagingSenderId: "536643428878",
+            appId: "1:536643428878:web:b9527baf1828015b0a525f",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadBids() {
+            const bidsContainer = document.getElementById("bids-container");
+            const carsSnapshot = await getDocs(collection(db, "cars"));
+            bidsContainer.innerHTML = ""; // Clear previous bids
+
+            carsSnapshot.forEach((carDoc) => {
+                const car = carDoc.data();
+                const bids = car.bids || [];
+
+                bids.forEach((bid) => {
+                    const bidElement = document.createElement("div");
+                    bidElement.classList.add("bid");
+                    bidElement.innerHTML = `
+                        <strong>Car:</strong> ${car.make} ${car.model}<br>
+                        <strong>Bidder Email:</strong> ${bid.bidderEmail}<br>
+                        <strong>Bid Amount:</strong> $${bid.bidAmount}<br>
+                        <strong>Date:</strong> ${new Date(bid.date).toLocaleString()}<br>
+                        <button onclick="approveBid('${carDoc.id}', '${bid.bidderEmail}')">Approve</button>
+                        <button onclick="selectWinner('${carDoc.id}', '${bid.bidderEmail}')">Select Winner</button>
+                    `;
+                    bidsContainer.appendChild(bidElement);
+                });
+            });
+        }
+
+        async function approveBid(carId, bidderEmail) {
+            const carRef = doc(db, "cars", carId);
+            const carsSnapshot = await getDocs(collection(db, "cars"));
+            let bidsToUpdate = [];
+
+            carsSnapshot.forEach((carDoc) => {
+                if (carDoc.id === carId) {
+                    const car = carDoc.data();
+                    const bids = car.bids || [];
+                    bidsToUpdate = bids.map(bid => {
+                        if (bid.bidderEmail === bidderEmail) {
+                            return { ...bid, approved: true }; // Mark the bid as approved
+                        }
+                        return bid;
+                    });
+                }
+            });
+
+            await updateDoc(carRef, { bids: bidsToUpdate });
+            alert(`Bid by ${bidderEmail} approved!`);
+            loadBids(); // Refresh bids
+        }
+
+        async function selectWinner(carId, winnerEmail) {
+            const carRef = doc(db, "cars", carId);
+            const carDoc = await getDocs(carRef);
+            const car = carDoc.data();
+            const bids = car.bids || [];
+
+            // Check if the winner is approved
+            const winningBid = bids.find(bid => bid.bidderEmail === winnerEmail && bid.approved);
+            if (winningBid) {
+                // Mark the winner
+                await updateDoc(carRef, { winner: winnerEmail });
+                alert(`Winner selected: ${winnerEmail} for car ${car.make} ${car.model}`);
+            } else {
+                alert("You must approve the bidder before selecting them as a winner.");
+            }
+
+            loadBids(); // Refresh bids
+        }
+
+        window.onload = loadBids;
+    </script>
 </body>
 </html>
