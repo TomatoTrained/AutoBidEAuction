@@ -29,17 +29,27 @@
           const querySnapshot = await getDocs(collection(db, "bidders"));
           bidderList.innerHTML = ""; // Clear the list
 
-          querySnapshot.forEach((doc) => {
-              const bidder = doc.data();
-              const bidderDiv = document.createElement("div");
-              bidderDiv.classList.add("bidder");
-              bidderDiv.innerHTML = `
-                  <p>${bidder.email}</p>
-                  <button onclick="approveBidder('${doc.id}', '${bidder.email}')">Approve</button>
-                  <button onclick="selectWinner('${doc.id}')">Select Winner</button>
-              `;
-              bidderList.appendChild(bidderDiv);
-          });
+          for (const docSnapshot of querySnapshot.docs) {
+              const bidder = docSnapshot.data();
+              console.log("Bidder data:", bidder); // Debugging: log bidder data
+
+              if (bidder.carId) {
+                  const carDoc = await getDoc(doc(db, "cars", bidder.carId)); // Fetch car details using carId
+                  const car = carDoc.data();
+                  console.log("Car data:", car); // Debugging: log car data
+
+                  const bidderDiv = document.createElement("div");
+                  bidderDiv.classList.add("bidder");
+                  bidderDiv.innerHTML = `
+                      <p>${bidder.email} - ${car ? car.make + ' ' + car.model : 'Car not found'}</p>
+                      <button onclick="approveBidder('${docSnapshot.id}', '${bidder.email}')">Approve</button>
+                      <button onclick="selectWinner('${docSnapshot.id}')">Select Winner</button>
+                  `;
+                  bidderList.appendChild(bidderDiv);
+              } else {
+                  console.warn("Bidder missing carId:", bidder); // Log a warning if carId is missing
+              }
+          }
       }
 
       async function approveBidder(bidderId, bidderEmail) {
