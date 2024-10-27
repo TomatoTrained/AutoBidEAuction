@@ -58,10 +58,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Make the functions globally accessible
-        window.approveBid = approveBid;
-        window.selectWinner = selectWinner;
-
         async function loadBids() {
             const bidsContainer = document.getElementById("bids-container");
             const carsSnapshot = await getDocs(collection(db, "cars"));
@@ -79,10 +75,33 @@
                         <strong>Bidder Email:</strong> ${bid.bidderEmail}<br>
                         <strong>Bid Amount:</strong> $${bid.bidAmount}<br>
                         <strong>Date:</strong> ${new Date(bid.date).toLocaleString()}<br>
-                        <button onclick="approveBid('${carDoc.id}', '${bid.bidderEmail}')">Approve</button>
-                        <button onclick="selectWinner('${carDoc.id}', '${bid.bidderEmail}')">Select Winner</button>
+                        <button class="approve-btn" data-car-id="${carDoc.id}" data-bidder-email="${bid.bidderEmail}">Approve</button>
+                        <button class="select-winner-btn" data-car-id="${carDoc.id}" data-bidder-email="${bid.bidderEmail}">Select Winner</button>
                     `;
                     bidsContainer.appendChild(bidElement);
+                });
+            });
+
+            // Attach event listeners after bids are loaded
+            attachEventListeners();
+        }
+
+        function attachEventListeners() {
+            const approveButtons = document.querySelectorAll('.approve-btn');
+            approveButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const carId = button.getAttribute('data-car-id');
+                    const bidderEmail = button.getAttribute('data-bidder-email');
+                    approveBid(carId, bidderEmail);
+                });
+            });
+
+            const selectWinnerButtons = document.querySelectorAll('.select-winner-btn');
+            selectWinnerButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const carId = button.getAttribute('data-car-id');
+                    const bidderEmail = button.getAttribute('data-bidder-email');
+                    selectWinner(carId, bidderEmail);
                 });
             });
         }
