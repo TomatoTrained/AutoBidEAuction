@@ -30,15 +30,16 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js"></script>
     <script>
-        // Firebase configuration (replace with your Firebase project config)
+        // Firebase configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            databaseURL: "YOUR_DATABASE_URL",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
+            authDomain: "user-login-form-a440d.firebaseapp.com",
+            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
+            projectId: "user-login-form-a440d",
+            storageBucket: "user-login-form-a440d.appspot.com",
+            messagingSenderId: "536643428878",
+            appId: "1:536643428878:web:b9527baf1828015b0a525f",
+            measurementId: "G-8DP3R6WJYB"
         };
 
         // Initialize Firebase
@@ -50,7 +51,6 @@
         Notification.requestPermission().then((permission) => {
             if (permission === 'granted') {
                 console.log('Notification permission granted.');
-                // Get the FCM token
                 getToken();
             } else {
                 console.log('Unable to get permission to notify.');
@@ -85,28 +85,6 @@
             container.appendChild(notificationElement);
         }
 
-        // Fetch and display notifications (needs implementation)
-        function getNotifications() {
-            // Example data fetching - replace with actual fetching logic
-            const notifications = [
-                { message: "Notification 1" },
-                { message: "Notification 2" },
-                { message: "Notification 3" },
-            ];
-            displayNotifications(notifications);
-        }
-
-        function displayNotifications(notifications) {
-            const container = document.getElementById("notifications-container");
-            container.innerHTML = "";  
-            notifications.forEach((notification) => {
-                const notificationElement = document.createElement("div");
-                notificationElement.textContent = notification.message;  
-                notificationElement.classList.add("notification");  
-                container.appendChild(notificationElement);  
-            });
-        }
-
         // Get the highest bidder amount from Firebase
         const highestBidderAmountElement = document.getElementById('highest-bidder-amount');
 
@@ -121,8 +99,9 @@
             }
         });
 
-        // Initial call to get notifications
-        getNotifications();
+        // Initial call to get notifications (if needed)
+        // This can be removed if you're only relying on FCM for notifications
+        // getNotifications();
     </script>
 </body>
 </html>
