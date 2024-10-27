@@ -1,114 +1,123 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-    <meta charset="UTF-8" />  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
-    <title>Bidder Approval</title>  
-    <!-- Import Firebase modules -->  
-    <script type="module">  
-      // Import Firebase App and Firestore from CDN  
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";  
-      import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bidder Approval</title>
+    <script type="module">
+      // Import Firebase App and Firestore from CDN
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
+      import { getFirestore, collection, getDocs, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js";
 
-      // Your web app's Firebase configuration  
-      const firebaseConfig = {  
-          apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",  
-          authDomain: "user-login-form-a440d.firebaseapp.com",  
-          databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",  
-          projectId: "user-login-form-a440d",  
-          storageBucket: "user-login-form-a440d.appspot.com",  
-          messagingSenderId: "536643428878",  
-          appId: "1:536643428878:web:b9527baf1828015b0a525f",  
-      };  
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+          apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
+          authDomain: "user-login-form-a440d.firebaseapp.com",
+          databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
+          projectId: "user-login-form-a440d",
+          storageBucket: "user-login-form-a440d.appspot.com",
+          messagingSenderId: "536643428878",
+          appId: "1:536643428878:web:b9527baf1828015b0a525f",
+      };
 
-      // Initialize Firebase  
-      const app = initializeApp(firebaseConfig);  
-      const db = getFirestore(app);  
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
 
-      async function loadBidders() {  
-          const bidderList = document.getElementById("bidderList");  
-          const querySnapshot = await getDocs(collection(db, "bidders"));  
-          bidderList.innerHTML = ""; // Clear the list  
+      async function loadBidders() {
+          const bidderList = document.getElementById("bidderList");
+          const querySnapshot = await getDocs(collection(db, "bidders"));
+          bidderList.innerHTML = ""; // Clear the list
 
-          querySnapshot.forEach((doc) => {  
-              const bidder = doc.data();  
-              const bidderDiv = document.createElement("div");  
-              bidderDiv.classList.add("bidder");  
-              bidderDiv.innerHTML = `  
-                  <p>${bidder.name} - ${bidder.email}</p>  
-                  <button onclick="approveBidder('${doc.id}')">Approve</button>  
-              `;  
-              bidderList.appendChild(bidderDiv);  
-          });  
-      }  
+          querySnapshot.forEach((doc) => {
+              const bidder = doc.data();
+              const bidderDiv = document.createElement("div");
+              bidderDiv.classList.add("bidder");
+              bidderDiv.innerHTML = `
+                  <p>${bidder.email}</p>
+                  <button onclick="approveBidder('${doc.id}', '${bidder.email}')">Approve</button>
+                  <button onclick="selectWinner('${doc.id}')">Select Winner</button>
+              `;
+              bidderList.appendChild(bidderDiv);
+          });
+      }
 
-      async function approveBidder(bidderId) {  
-          const bidderRef = doc(db, "bidders", bidderId);  
-          await updateDoc(bidderRef, {  
-              approved: true,  
-          });  
-          alert("Bidder approved!");  
-          loadBidders(); // Refresh the list  
-      }  
+      async function approveBidder(bidderId, bidderEmail) {
+          const bidderRef = doc(db, "bidders", bidderId);
+          await updateDoc(bidderRef, { approved: true });
+          alert("Bidder approved!");
+          await sendNotification(bidderEmail, "Your bid has been approved!"); // Send notification
+          loadBidders(); // Refresh the list
+      }
 
-      async function selectWinner(bidderId) {  
-          const winnerDoc = await getDoc(doc(db, "bidders", bidderId));  
-          const winner = winnerDoc.data();  
+      async function sendNotification(email, message) {
+          const notification = {
+              email: email,
+              message: message,
+              timestamp: new Date(),
+          };
+          // Add to notifications collection
+          await setDoc(doc(db, "notifications", email), notification);
+      }
 
-          if (winner && winner.approved) {  
-              alert(`${winner.name} has been selected as the winner!`);  
-          } else {  
-              alert("You must approve the bidder before selecting them as a winner.");  
-          }  
-      }  
+      async function selectWinner(bidderId) {
+          const winnerDoc = await getDoc(doc(db, "bidders", bidderId));
+          const winner = winnerDoc.data();
 
-      window.onload = loadBidders;  
-    </script>  
-    <style>  
-      body {  
-          font-family: "Arial", sans-serif;  
-          background-color: #f5f5f5;  
-          margin: 0;  
-          padding: 20px;  
-          color: #333;  
-      }  
-      h1 {  
-          text-align: center;  
-          color: #4caf50;  
-      }  
-      #bidderList {  
-          max-width: 600px;  
-          margin: auto;  
-          padding: 10px;  
-          background: white;  
-          border-radius: 5px;  
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  
-      }  
-      .bidder {  
-          display: flex;  
-          justify-content: space-between;  
-          padding: 10px;  
-          border-bottom: 1px solid #ddd;  
-      }  
-      .bidder:last-child {  
-          border-bottom: none;  
-      }  
-      button {  
-          background-color: #4caf50;  
-          color: white;  
-          border: none;  
-          padding: 8px 12px;  
-          border-radius: 4px;  
-          cursor: pointer;  
-          transition: background-color 0.3s;  
-      }  
-      button:hover {  
-          background-color: #45a049;  
-      }  
-    </style>  
-</head>  
-<body>  
-    <h1>Bidder Approval</h1>  
-    <div id="bidderList"></div>  
-</body>  
+          if (winner && winner.approved) {
+              alert(`${winner.email} has been selected as the winner!`);
+          } else {
+              alert("You must approve the bidder before selecting them as a winner.");
+          }
+      }
+
+      window.onload = loadBidders;
+    </script>
+    <style>
+      body {
+          font-family: "Arial", sans-serif;
+          background-color: #f5f5f5;
+          margin: 0;
+          padding: 20px;
+          color: #333;
+      }
+      h1 {
+          text-align: center;
+          color: #4caf50;
+      }
+      #bidderList {
+          max-width: 600px;
+          margin: auto;
+          padding: 10px;
+          background: white;
+          border-radius: 5px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .bidder {
+          display: flex;
+          justify-content: space-between;
+          padding: 10px;
+          border-bottom: 1px solid #ddd;
+      }
+      .bidder:last-child {
+          border-bottom: none;
+      }
+      button {
+          background-color: #4caf50;
+          color: white;
+          border: none;
+          padding: 8px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+      }
+      button:hover {
+          background-color: #45a049;
+      }
+    </style>
+</head>
+<body>
+    <h1>Bidder Approval</h1>
+    <div id="bidderList"></div>
+</body>
 </html>
