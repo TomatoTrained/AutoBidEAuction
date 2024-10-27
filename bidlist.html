@@ -58,6 +58,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // Make the functions globally accessible
+        window.approveBid = approveBid;
+        window.selectWinner = selectWinner;
+
         async function loadBids() {
             const bidsContainer = document.getElementById("bids-container");
             const carsSnapshot = await getDocs(collection(db, "cars"));
