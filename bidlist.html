@@ -82,7 +82,6 @@
                 });
             });
 
-            // Attach event listeners after bids are loaded
             attachEventListeners();
         }
 
@@ -117,7 +116,7 @@
                     const bids = car.bids || [];
                     bidsToUpdate = bids.map(bid => {
                         if (bid.bidderEmail === bidderEmail) {
-                            return { ...bid, approved: true }; // Mark the bid as approved
+                            return { ...bid, approved: true };
                         }
                         return bid;
                     });
@@ -126,6 +125,10 @@
 
             await updateDoc(carRef, { bids: bidsToUpdate });
             alert(`Bid by ${bidderEmail} approved!`);
+
+            // Send notification about the approved bid
+            sendNotification(bidderEmail, 'Your bid has been approved!');
+
             loadBids(); // Refresh bids
         }
 
@@ -135,17 +138,32 @@
             const car = carDoc.data();
             const bids = car.bids || [];
 
-            // Check if the winner is approved
             const winningBid = bids.find(bid => bid.bidderEmail === winnerEmail && bid.approved);
             if (winningBid) {
-                // Mark the winner
                 await updateDoc(carRef, { winner: winnerEmail });
                 alert(`Winner selected: ${winnerEmail} for car ${car.make} ${car.model}`);
+
+                // Send notification about the winner selection
+                sendNotification(winnerEmail, 'Congratulations! You have been selected as the winner!');
             } else {
                 alert("You must approve the bidder before selecting them as a winner.");
             }
 
             loadBids(); // Refresh bids
+        }
+
+        async function sendNotification(email, message) {
+            const response = await fetch('http://localhost:3000/send-notification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, message }),
+            });
+
+            if (!response.ok) {
+                console.error('Failed to send notification');
+            }
         }
 
         window.onload = loadBids;
