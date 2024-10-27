@@ -4,13 +4,13 @@ importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js');
 
 // Initialize the Firebase app in the service worker by passing in the messagingSenderId.
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    databaseURL: "YOUR_DATABASE_URL",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
+    authDomain: "user-login-form-a440d.firebaseapp.com",
+    databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
+    projectId: "user-login-form-a440d",
+    storageBucket: "user-login-form-a440d.appspot.com",
+    messagingSenderId: "536643428878",
+    appId: "1:536643428878:web:b9527baf1828015b0a525f"
 };
 
 firebase.initializeApp(firebaseConfig);
