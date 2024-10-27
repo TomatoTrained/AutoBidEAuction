@@ -27,12 +27,10 @@
     <div id="highest-bidder-amount"></div>
 
     <script type="module">
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
         import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js";
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
             authDomain: "user-login-form-a440d.firebaseapp.com",
@@ -44,12 +42,10 @@
             measurementId: "G-8DP3R6WJYB"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const messaging = getMessaging(app);
 
-        // Request permission for notifications
         Notification.requestPermission().then((permission) => {
             if (permission === 'granted') {
                 console.log('Notification permission granted.');
@@ -72,26 +68,22 @@
             });
         }
 
-        // Handle incoming messages
         onMessage(messaging, (payload) => {
             console.log('Message received. ', payload);
-            // Display notification
             displayNotification(payload.notification);
         });
 
         function displayNotification(notification) {
             const container = document.getElementById("notifications-container");
             const notificationElement = document.createElement("div");
-            notificationElement.textContent = notification.body; // Display the notification body
-            notificationElement.classList.add("notification");  // Added class for styling
+            notificationElement.textContent = notification.body; 
+            notificationElement.classList.add("notification");
             container.appendChild(notificationElement);
         }
 
-        // Get the highest bidder amount from Firebase
         const highestBidderAmountElement = document.getElementById('highest-bidder-amount');
-
-        // Listen for changes to the bids nodes
         const bidsRef = ref(database, 'bids');
+
         onValue(bidsRef, (snapshot) => {
             const bids = snapshot.val();
             if (bids && Object.keys(bids).length > 0) {
