@@ -10,7 +10,7 @@
         }
         .notification {
             padding: 10px;
-            border-bottom: 1px solid #ccc;  /* Fixed typo on border */
+            border-bottom: 1px solid #ccc;
         }
         h1 {
             color: green;
@@ -26,10 +26,12 @@
     <div id="notifications-container"></div>
     <div id="highest-bidder-amount"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js"></script>
-    <script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js";
+
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
@@ -43,22 +45,22 @@
         };
 
         // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const messaging = firebase.messaging();
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const messaging = getMessaging(app);
 
         // Request permission for notifications
         Notification.requestPermission().then((permission) => {
             if (permission === 'granted') {
                 console.log('Notification permission granted.');
-                getToken();
+                getFCMToken();
             } else {
                 console.log('Unable to get permission to notify.');
             }
         });
 
-        function getToken() {
-            messaging.getToken({ vapidKey: 'YOUR_VAPID_PUBLIC_KEY' }).then((currentToken) => {
+        function getFCMToken() {
+            getToken(messaging, { vapidKey: 'YOUR_VAPID_PUBLIC_KEY' }).then((currentToken) => {
                 if (currentToken) {
                     console.log('FCM Token:', currentToken);
                     // Send this token to your server to send notifications
@@ -71,7 +73,7 @@
         }
 
         // Handle incoming messages
-        messaging.onMessage((payload) => {
+        onMessage(messaging, (payload) => {
             console.log('Message received. ', payload);
             // Display notification
             displayNotification(payload.notification);
@@ -89,7 +91,8 @@
         const highestBidderAmountElement = document.getElementById('highest-bidder-amount');
 
         // Listen for changes to the bids nodes
-        database.ref('bids').on('value', (snapshot) => {
+        const bidsRef = ref(database, 'bids');
+        onValue(bidsRef, (snapshot) => {
             const bids = snapshot.val();
             if (bids && Object.keys(bids).length > 0) {
                 const highestBidderAmount = Math.max(...Object.values(bids));
@@ -98,10 +101,6 @@
                 highestBidderAmountElement.innerText = "No bids available.";
             }
         });
-
-        // Initial call to get notifications (if needed)
-        // This can be removed if you're only relying on FCM for notifications
-        // getNotifications();
     </script>
 </body>
 </html>
