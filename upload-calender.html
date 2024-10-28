@@ -1,67 +1,105 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-    <meta charset="UTF-8" />  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
-    <title>Admin Upload Calendar</title>  
-    <link rel="stylesheet" href="stylz2.css" />  
-    <script type="module">  
-        // Import necessary Firebase functions  
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";  
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";  
-        import { getDatabase, ref as dbRef, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Upload Calendar</title>
+    <link rel="stylesheet" href="stylz2.css" />
+    <script type="module">
+        // Import necessary Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";
+        import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-        // Your Firebase configuration  
-         
-          const firebaseConfig = {  
-            apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",  
-            authDomain: "user-login-form-a440d.firebaseapp.com",  
-            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",  
-            projectId: "user-login-form-a440d",  
-            storageBucket: "user-login-form-a440d.appspot.com",  
-            messagingSenderId: "536643428878",  
-            appId: "1:536643428878:web:b9527baf1828015b0a525f"  
-        };  
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
+            authDomain: "user-login-form-a440d.firebaseapp.com",
+            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
+            projectId: "user-login-form-a440d",
+            storageBucket: "user-login-form-a440d.appspot.com",
+            messagingSenderId: "536643428878",
+            appId: "1:536643428878:web:b9527baf1828015b0a525f"
+        };
 
-        // Initialize Firebase  
-        const app = initializeApp(firebaseConfig);  
-        const storage = getStorage(app);  
-        const database = getDatabase(app);  
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+        const database = getDatabase(app);
 
-        document.addEventListener("DOMContentLoaded", function () {  
-            document.getElementById("uploadButton").addEventListener("click", async function () {  
-                const file = document.getElementById("fileInput").files[0];  
-                if (!file) {  
-                    alert("Please select a file first.");  
-                    return;  
-                }  
+        document.addEventListener("DOMContentLoaded", function () {
+            // Upload calendar PDF
+            document.getElementById("uploadButton").addEventListener("click", async function () {
+                const file = document.getElementById("fileInput").files[0];
+                if (!file) {
+                    alert("Please select a file first.");
+                    return;
+                }
 
-                // Sanitize the file name by replacing illegal characters  
-                const fileName = file.name;  
-                const sanitizedFileName = fileName.replace(/[.#$\[\] ]/g, "_"); // Replace invalid characters  
+                const fileName = file.name;
+                const sanitizedFileName = fileName.replace(/[.#$\[\] ]/g, "_"); // Sanitize file name
 
-                const fileRef = storageRef(storage, "calendars/" + sanitizedFileName);  
-                try {  
-                    await uploadBytes(fileRef, file);  
-                    const downloadURL = await getDownloadURL(fileRef);  
-                    await set(dbRef(database, "calendars/" + sanitizedFileName), {  
-                        url: downloadURL,  
-                        name: sanitizedFileName,  
-                    });  
-                    alert("Upload successful!");  
-                } catch (error) {  
-                    console.error(error);  
-                    alert("Upload failed! " + error.message);  
-                }  
-            });  
-        });  
-    </script>  
-</head>  
-<body>  
-    <div class="container">  
-        <h1>Upload Calendar PDF</h1>  
-        <input type="file" id="fileInput" accept="application/pdf" />  
-        <button id="uploadButton">Upload</button>  
-    </div>  
-</body>  
+                const fileRef = storageRef(storage, "calendars/" + sanitizedFileName);
+                try {
+                    await uploadBytes(fileRef, file);
+                    const downloadURL = await getDownloadURL(fileRef);
+                    await set(dbRef(database, "calendars/" + sanitizedFileName), {
+                        url: downloadURL,
+                        name: sanitizedFileName,
+                    });
+                    alert("Upload successful!");
+                } catch (error) {
+                    console.error(error);
+                    alert("Upload failed! " + error.message);
+                }
+            });
+
+            // Handle bidding time settings
+            document.getElementById("biddingForm").addEventListener("submit", (event) => {
+                event.preventDefault(); // Prevent default form submission
+                const start = new Date(document.getElementById("startTime").value);
+                const end = new Date(document.getElementById("endTime").value);
+                
+                // Validate that end time is after start time
+                if (end <= start) {
+                    alert("End time must be after start time.");
+                    return;
+                }
+
+                // Update bidding times in Firebase
+                set(dbRef(database, "bidding/"), {
+                    startTime: start.toISOString(),
+                    endTime: end.toISOString(),
+                })
+                .then(() => {
+                    alert("Bidding times updated successfully!");
+                })
+                .catch((error) => {
+                    console.error("Error updating bidding times:", error);
+                    alert("Failed to update bidding times: " + error.message);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Calendar PDF</h1>
+        <div class="upload-section">
+            <input type="file" id="fileInput" accept="application/pdf" />
+            <button id="uploadButton">Upload</button>
+        </div>
+
+        <h2>Set Bidding Times</h2>
+        <form id="biddingForm" class="bidding-form">
+            <label for="startTime">Start Time:</label>
+            <input type="datetime-local" id="startTime" required />
+            <br />
+            <label for="endTime">End Time:</label>
+            <input type="datetime-local" id="endTime" required />
+            <br />
+            <button type="submit">Set Bidding Times</button>
+        </form>
+    </div>
+</body>
 </html>
