@@ -33,19 +33,25 @@
             onValue(calendarsRef, (snapshot) => {
                 catalogueLinks.innerHTML = ""; // Clear existing links
 
-                snapshot.forEach((childSnapshot) => {
-                    const data = childSnapshot.val();
-                    if (data && data.url && data.name) {  // Check if data is valid
-                        const link = document.createElement("a");
-                        link.href = data.url;  // URL for downloading
-                        link.download = data.name; // Suggest name for download
-                        link.textContent = `Download ${data.name}`;
-                        catalogueLinks.appendChild(link);
-                        catalogueLinks.appendChild(document.createElement("br")); // Line breaks for readability
-                    } else {
-                        console.error("Missing data:", data);
-                    }
-                });
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const data = childSnapshot.val();
+                        console.log("Data:", data); // Log data for debugging
+                        if (data && data.url && data.name) {
+                            const link = document.createElement("a");
+                            link.href = data.url;  // URL for downloading
+                            link.download = data.name; // Suggest name for download
+                            link.textContent = `Download ${data.name}`;
+                            catalogueLinks.appendChild(link);
+                            catalogueLinks.appendChild(document.createElement("br")); // Line breaks for readability
+                        } else {
+                            console.error("Missing data:", data);
+                        }
+                    });
+                } else {
+                    console.error("No calendars found in the database.");
+                    catalogueLinks.textContent = "No calendars available for download.";
+                }
             }, (error) => {
                 console.error("Error reading data:", error); // Handle errors
             });
