@@ -43,12 +43,11 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, updateDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, updateDoc, doc, getDoc, addDoc } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
             authDomain: "user-login-form-a440d.firebaseapp.com",
-            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
             projectId: "user-login-form-a440d",
             storageBucket: "user-login-form-a440d.appspot.com",
             messagingSenderId: "536643428878",
@@ -114,6 +113,10 @@
             const carRef = doc(db, "cars", carId);
             try {
                 const carDoc = await getDoc(carRef);
+                if (!carDoc.exists()) {
+                    throw new Error("Car document not found.");
+                }
+
                 const car = carDoc.data();
                 const bids = car.bids || [];
                 const bidsToUpdate = bids.map(bid => {
@@ -124,7 +127,7 @@
                 });
 
                 await updateDoc(carRef, { bids: bidsToUpdate });
-                sendPaymentNotification(bidderEmail, car); // Send notification
+                await sendNotification(bidderEmail, `${car.make} ${car.model} bid approved!`); // Directly send notification to Firestore
                 loadBids(); // Refresh bids
             } catch (error) {
                 console.error("Error approving bid:", error);
@@ -136,13 +139,17 @@
             const carRef = doc(db, "cars", carId);
             try {
                 const carDoc = await getDoc(carRef);
+                if (!carDoc.exists()) {
+                    throw new Error("Car document not found.");
+                }
+
                 const car = carDoc.data();
                 const bids = car.bids || [];
 
                 const winningBid = bids.find(bid => bid.bidderEmail === winnerEmail && bid.approved);
                 if (winningBid) {
                     await updateDoc(carRef, { winner: winnerEmail });
-                    sendPaymentNotification(winnerEmail, car); // Send notification with payment link
+                    await sendNotification(winnerEmail, `Congratulations! You have won the bid for ${car.make} ${car.model}.`); // Send winner notification
                     loadBids(); // Refresh bids
                 } else {
                     alert("You must approve the bidder before selecting them as a winner.");
@@ -153,23 +160,20 @@
             }
         }
 
-        async function sendPaymentNotification(email, car) {
-            const message = `
-                Congratulations! You have been selected as the winner for the car ${car.make} ${car.model}. 
-                Please proceed to make your payment: 
-                <a href='https://www.paynow.co.zw/Payment/Link/?q=c2VhcmNoPWVkZHl3YWxlMzk4JTQwZ21haWwuY29tJmFtb3VudD0wLjAwJnJlZmVyZW5jZT0mbD0w' target='_blank'>
-                    <img src='https://www.paynow.co.zw/Content/Buttons/Medium_buttons/button_pay-now_medium.png' style='border:0'/>
-                </a>
-            `;
+        async function sendNotification(email, message) {
+            try {
+                const notificationData = {
+                    email: email,
+                    message: message,
+                    timestamp: new Date(), // Set the current timestamp
+                };
 
-            // Send the notification to the user notifications tab
-            await fetch('http://localhost:3000/send-notification', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, message }),
-            });
+                // Add the notification to the "notifications" collection
+                await addDoc(collection(db, "notifications"), notificationData);
+                console.log('Notification sent:', notificationData);
+            } catch (error) {
+                console.error('Error sending notification:', error);
+            }
         }
 
         window.onload = loadBids;
