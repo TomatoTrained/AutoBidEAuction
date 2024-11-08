@@ -32,15 +32,6 @@
         .notification:last-child {
             border-bottom: none;
         }
-        .pay-button {
-            margin-top: 10px;
-            display: inline-block;
-            text-decoration: none;
-        }
-        .pay-button img {
-            width: 100px; /* Adjust the size as needed */
-            border: none;
-        }
     </style>
 </head>
 <body>
@@ -70,10 +61,10 @@
         // Listen for authentication state changes
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                const userEmail = user.email; // Get the logged-in user's email
+                const userEmail = user.email.replace('.', '_'); // Prepare for Firebase key
 
                 // Fetch notifications from Firebase
-                const notificationsRef = ref(database, 'notifications/' + userEmail.replace('.', '_'));
+                const notificationsRef = ref(database, 'notifications/' + userEmail);
                 onValue(notificationsRef, (snapshot) => {
                     const notificationData = snapshot.val();
                     const container = document.getElementById("notifications-container");
@@ -82,7 +73,7 @@
                     if (notificationData) {
                         const notificationElement = document.createElement("div");
                         notificationElement.classList.add("notification");
-                        notificationElement.innerHTML = notificationData.message;
+                        notificationElement.innerHTML = notificationData.message; // Display the message
                         container.appendChild(notificationElement);
                     } else {
                         const messageElement = document.createElement("div");
@@ -92,7 +83,7 @@
                     }
                 });
 
-                // Fetch highest bidder amount logic here
+                // Fetch highest bidder amount logic
                 const highestBidderAmountElement = document.getElementById('highest-bidder-amount');
                 const bidsRef = ref(database, 'bids');
 
@@ -106,7 +97,6 @@
                     }
                 });
             } else {
-                // User is signed out
                 document.getElementById("notifications-container").innerHTML = "Please log in to see your notifications.";
             }
         });
