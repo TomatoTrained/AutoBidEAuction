@@ -127,7 +127,15 @@
                 });
 
                 await updateDoc(carRef, { bids: bidsToUpdate });
-                await sendNotification(bidderEmail, `${car.make} ${car.model} bid approved!`); // Directly send notification to Firestore
+                
+                // Send notification and show success/failure message
+                const notificationResult = await sendNotification(bidderEmail, `${car.make} ${car.model} bid approved!`);
+                if (notificationResult) {
+                    alert("Bid approved successfully!");
+                } else {
+                    alert("Bid approved, but failed to send notification.");
+                }
+
                 loadBids(); // Refresh bids
             } catch (error) {
                 console.error("Error approving bid:", error);
@@ -152,7 +160,15 @@
                         winner: winnerEmail,
                         isLocked: true // Lock the car
                     });
-                    await sendPaymentNotification(winnerEmail, car); // Notify winner with payment link
+                    
+                    // Send payment notification and show success/failure message
+                    const paymentNotificationResult = await sendPaymentNotification(winnerEmail, car);
+                    if (paymentNotificationResult) {
+                        alert("Winner selected successfully!");
+                    } else {
+                        alert("Winner selected, but failed to send payment notification.");
+                    }
+
                     loadBids(); // Refresh bids
                 } else {
                     alert("You must approve the bidder before selecting them as a winner.");
@@ -168,14 +184,15 @@
                 const notificationData = {
                     email: email,
                     message: message,
-                    timestamp: new Date(), // Set the current timestamp
+                    timestamp: new Date(),
                 };
 
-                // Add the notification to the "notifications" collection
                 await addDoc(collection(db, "notifications"), notificationData);
                 console.log('Notification sent:', notificationData);
+                return true; // Indicate success
             } catch (error) {
                 console.error('Error sending notification:', error);
+                return false; // Indicate failure
             }
         }
 
@@ -183,7 +200,6 @@
             const amount = car.price; // Assuming the car document has a price field
             const reference = `car_${car.id}`; // Generate a unique reference
 
-            // Create the Paynow payment link
             const paymentLink = `https://www.paynow.co.zw/Payment/Link/?q=${encodeURIComponent(`search=${reference}&amount=${amount}`)}`;
 
             const message = `
@@ -194,7 +210,7 @@
                 </a>
             `;
 
-            await sendNotification(email, message);
+            return await sendNotification(email, message); // Return the result of the sendNotification function
         }
 
         window.onload = loadBids;
