@@ -1,55 +1,67 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-    <meta charset="UTF-8" />  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
-    <title>User Calendar Downloads</title>  
-    <link rel="stylesheet" href="stylz2.css" />  
-    <script type="module">  
-        // Import necessary Firebase functions  
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";  
-        import { getDatabase, ref as dbRef, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Calendar Downloads</title>
+    <link rel="stylesheet" href="stylz2.css" />
+    <script type="module">
+        // Import necessary Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref as dbRef, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-        // Your Firebase configuration  
-        const firebaseConfig = {  
-            apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",  
-            authDomain: "user-login-form-a440d.firebaseapp.com",  
-            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",  
-            projectId: "user-login-form-a440d",  
-            storageBucket: "user-login-form-a440d.appspot.com",  
-            messagingSenderId: "536643428878",  
-            appId: "1:536643428878:web:b9527baf1828015b0a525f"  
-        };  
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
+            authDomain: "user-login-form-a440d.firebaseapp.com",
+            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
+            projectId: "user-login-form-a440d",
+            storageBucket: "user-login-form-a440d.appspot.com",
+            messagingSenderId: "536643428878",
+            appId: "1:536643428878:web:b9527baf1828015b0a525f"
+        };
 
-        // Initialize Firebase  
-        const app = initializeApp(firebaseConfig);  
-        const database = getDatabase(app);  
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-        document.addEventListener("DOMContentLoaded", function () {  
-            const catalogueLinks = document.getElementById("catalogueLinks");  
-            
-            // Reference to the "calendars" node in the database  
-            const calendarsRef = dbRef(database, "calendars/");  
-            onValue(calendarsRef, (snapshot) => {  
-                catalogueLinks.innerHTML = ""; // Clear existing links  
-                
-                snapshot.forEach((childSnapshot) => {  
-                    const data = childSnapshot.val();  
-                    const link = document.createElement("a");  
-                    link.href = data.url;  // URL for downloading  
-                    link.download = data.name; // Suggest name for download  
-                    link.textContent = `Download ${data.name}`;  
-                    catalogueLinks.appendChild(link);  
-                    catalogueLinks.appendChild(document.createElement("br")); // Line breaks for readability  
-                });  
-            });  
-        });  
-    </script>  
-</head>  
-<body>  
-    <div class="container">  
-        <h1>Available Calendars for Download</h1>  
-        <div id="catalogueLinks"></div> <!-- Place to display the links -->  
-    </div>  
-</body>  
+        document.addEventListener("DOMContentLoaded", function () {
+            const catalogueLinks = document.getElementById("catalogueLinks");
+
+            // Reference to the "calendars" node in the database
+            const calendarsRef = dbRef(database, "calendars/");
+            onValue(calendarsRef, (snapshot) => {
+                catalogueLinks.innerHTML = ""; // Clear existing links
+
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const data = childSnapshot.val();
+                        console.log("Data:", data); // Log data for debugging
+                        if (data && data.url && data.name) {
+                            const link = document.createElement("a");
+                            link.href = data.url;  // URL for downloading
+                            link.download = data.name; // Suggest name for download
+                            link.textContent = `Download ${data.name}`;
+                            catalogueLinks.appendChild(link);
+                            catalogueLinks.appendChild(document.createElement("br")); // Line breaks for readability
+                        } else {
+                            console.error("Missing data:", data);
+                        }
+                    });
+                } else {
+                    console.error("No calendars found in the database.");
+                    catalogueLinks.textContent = "No calendars available for download.";
+                }
+            }, (error) => {
+                console.error("Error reading data:", error); // Handle errors
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Available Calendars for Download</h1>
+        <div id="catalogueLinks"></div> <!-- Place to display the links -->
+    </div>
+</body>
 </html>
