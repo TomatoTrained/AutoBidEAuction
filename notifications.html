@@ -53,12 +53,16 @@
 
                 notificationsSnapshot.forEach((doc) => {
                     const notification = doc.data();
+                    const email = notification.email || "No email provided";
+                    const message = notification.message || "No message available";
+                    const timestamp = notification.timestamp ? new Date(notification.timestamp) : new Date();
+
                     const notificationElement = document.createElement("div");
                     notificationElement.classList.add("notification");
                     notificationElement.innerHTML = `
-                        <strong>${new Date(notification.timestamp).toLocaleString()}</strong><br>
-                        <strong>Email:</strong> ${notification.email}<br>
-                        <strong>Message:</strong> ${notification.message}<br>
+                        <strong>${timestamp.toLocaleString()}</strong><br>
+                        <strong>Email:</strong> ${email}<br>
+                        <strong>Message:</strong> ${message}<br>
                         <hr>
                     `;
                     notificationsContainer.appendChild(notificationElement);
