@@ -148,8 +148,11 @@
 
                 const winningBid = bids.find(bid => bid.bidderEmail === winnerEmail && bid.approved);
                 if (winningBid) {
-                    await updateDoc(carRef, { winner: winnerEmail });
-                    await sendNotification(winnerEmail, `Congratulations! You have won the bid for ${car.make} ${car.model}.`); // Send winner notification
+                    await updateDoc(carRef, {
+                        winner: winnerEmail,
+                        isLocked: true // Lock the car
+                    });
+                    await sendPaymentNotification(winnerEmail, car); // Notify winner with payment link
                     loadBids(); // Refresh bids
                 } else {
                     alert("You must approve the bidder before selecting them as a winner.");
@@ -174,6 +177,24 @@
             } catch (error) {
                 console.error('Error sending notification:', error);
             }
+        }
+
+        async function sendPaymentNotification(email, car) {
+            const amount = car.price; // Assuming the car document has a price field
+            const reference = `car_${car.id}`; // Generate a unique reference
+
+            // Create the Paynow payment link
+            const paymentLink = `https://www.paynow.co.zw/Payment/Link/?q=${encodeURIComponent(`search=${reference}&amount=${amount}`)}`;
+
+            const message = `
+                Congratulations! You have won the bid for ${car.make} ${car.model}. 
+                Please proceed to make your payment: 
+                <a href="${paymentLink}" target="_blank">
+                    <img src='https://www.paynow.co.zw/Content/Buttons/Medium_buttons/button_pay-now_medium.png' style='border:0'/>
+                </a>
+            `;
+
+            await sendNotification(email, message);
         }
 
         window.onload = loadBids;
