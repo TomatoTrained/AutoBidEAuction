@@ -60,29 +60,34 @@
 
         async function loadBids() {
             const bidsContainer = document.getElementById("bids-container");
-            const carsSnapshot = await getDocs(collection(db, "cars"));
-            bidsContainer.innerHTML = ""; // Clear previous bids
+            try {
+                const carsSnapshot = await getDocs(collection(db, "cars"));
+                bidsContainer.innerHTML = ""; // Clear previous bids
 
-            carsSnapshot.forEach((carDoc) => {
-                const car = carDoc.data();
-                const bids = car.bids || [];
+                carsSnapshot.forEach((carDoc) => {
+                    const car = carDoc.data();
+                    const bids = car.bids || [];
 
-                bids.forEach((bid) => {
-                    const bidElement = document.createElement("div");
-                    bidElement.classList.add("bid");
-                    bidElement.innerHTML = `
-                        <strong>Car:</strong> ${car.make} ${car.model}<br>
-                        <strong>Bidder Email:</strong> ${bid.bidderEmail}<br>
-                        <strong>Bid Amount:</strong> $${bid.bidAmount}<br>
-                        <strong>Date:</strong> ${new Date(bid.date).toLocaleString()}<br>
-                        <button class="approve-btn" data-car-id="${carDoc.id}" data-bidder-email="${bid.bidderEmail}">Approve</button>
-                        <button class="select-winner-btn" data-car-id="${carDoc.id}" data-bidder-email="${bid.bidderEmail}">Select Winner</button>
-                    `;
-                    bidsContainer.appendChild(bidElement);
+                    bids.forEach((bid) => {
+                        const bidElement = document.createElement("div");
+                        bidElement.classList.add("bid");
+                        bidElement.innerHTML = `
+                            <strong>Car:</strong> ${car.make} ${car.model}<br>
+                            <strong>Bidder Email:</strong> ${bid.bidderEmail}<br>
+                            <strong>Bid Amount:</strong> $${bid.bidAmount}<br>
+                            <strong>Date:</strong> ${new Date(bid.date).toLocaleString()}<br>
+                            <button class="approve-btn" data-car-id="${carDoc.id}" data-bidder-email="${bid.bidderEmail}">Approve</button>
+                            <button class="select-winner-btn" data-car-id="${carDoc.id}" data-bidder-email="${bid.bidderEmail}">Select Winner</button>
+                        `;
+                        bidsContainer.appendChild(bidElement);
+                    });
                 });
-            });
 
-            attachEventListeners();
+                attachEventListeners();
+            } catch (error) {
+                console.error("Error loading bids:", error);
+                bidsContainer.innerHTML = "<p>Error loading bids. Please try again later.</p>";
+            }
         }
 
         function attachEventListeners() {
@@ -107,63 +112,64 @@
 
         async function approveBid(carId, bidderEmail) {
             const carRef = doc(db, "cars", carId);
-            const carsSnapshot = await getDocs(collection(db, "cars"));
-            let bidsToUpdate = [];
+            try {
+                const carDoc = await getDocs(carRef);
+                const car = carDoc.data();
+                const bids = car.bids || [];
+                const bidsToUpdate = bids.map(bid => {
+                    if (bid.bidderEmail === bidderEmail) {
+                        return { ...bid, approved: true };
+                    }
+                    return bid;
+                });
 
-            carsSnapshot.forEach((carDoc) => {
-                if (carDoc.id === carId) {
-                    const car = carDoc.data();
-                    const bids = car.bids || [];
-                    bidsToUpdate = bids.map(bid => {
-                        if (bid.bidderEmail === bidderEmail) {
-                            return { ...bid, approved: true };
-                        }
-                        return bid;
-                    });
-                }
-            });
-
-            await updateDoc(carRef, { bids: bidsToUpdate });
-            alert(`Bid by ${bidderEmail} approved!`);
-
-            // Send notification about the approved bid
-            sendNotification(bidderEmail, 'Your bid has been approved!');
-
-            loadBids(); // Refresh bids
+                await updateDoc(carRef, { bids: bidsToUpdate });
+                sendNotification(bidderEmail, 'Your bid has been approved!');
+                loadBids(); // Refresh bids
+            } catch (error) {
+                console.error("Error approving bid:", error);
+                alert("Failed to approve the bid. Please try again.");
+            }
         }
 
         async function selectWinner(carId, winnerEmail) {
             const carRef = doc(db, "cars", carId);
-            const carDoc = await getDocs(carRef);
-            const car = carDoc.data();
-            const bids = car.bids || [];
+            try {
+                const carDoc = await getDocs(carRef);
+                const car = carDoc.data();
+                const bids = car.bids || [];
 
-            const winningBid = bids.find(bid => bid.bidderEmail === winnerEmail && bid.approved);
-            if (winningBid) {
-                await updateDoc(carRef, { winner: winnerEmail });
-                alert(`Winner selected: ${winnerEmail} for car ${car.make} ${car.model}`);
-
-                // Send notification about the winner selection
-                sendNotification(winnerEmail, 'Congratulations! You have been selected as the winner!');
-            } else {
-                alert("You must approve the bidder before selecting them as a winner.");
+                const winningBid = bids.find(bid => bid.bidderEmail === winnerEmail && bid.approved);
+                if (winningBid) {
+                    await updateDoc(carRef, { winner: winnerEmail });
+                    sendPaymentNotification(winnerEmail, car); // Send notification with payment link
+                    loadBids(); // Refresh bids and remove the car from the list
+                } else {
+                    alert("You must approve the bidder before selecting them as a winner.");
+                }
+            } catch (error) {
+                console.error("Error selecting winner:", error);
+                alert("Failed to select the winner. Please try again.");
             }
-
-            loadBids(); // Refresh bids
         }
 
-        async function sendNotification(email, message) {
-            const response = await fetch('http://localhost:3000/send-notification', {
+        async function sendPaymentNotification(email, car) {
+            const message = `
+                Congratulations! You have been selected as the winner for the car ${car.make} ${car.model}. 
+                Please proceed to make your payment: 
+                <a href='https://www.paynow.co.zw/Payment/Link/?q=c2VhcmNoPWVkZHl3YWxlMzk4JTQwZ21haWwuY29tJmFtb3VudD0wLjAwJnJlZmVyZW5jZT0mbD0w' target='_blank'>
+                    <img src='https://www.paynow.co.zw/Content/Buttons/Medium_buttons/button_pay-now_medium.png' style='border:0'/>
+                </a>
+            `;
+
+            // Send the notification to the user notifications tab
+            await fetch('http://localhost:3000/send-notification', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ email, message }),
             });
-
-            if (!response.ok) {
-                console.error('Failed to send notification');
-            }
         }
 
         window.onload = loadBids;
