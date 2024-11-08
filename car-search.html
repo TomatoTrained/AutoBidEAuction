@@ -4,7 +4,78 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User - View Cars and Place Bids</title>
-    <link rel="stylesheet" href="stylz3.css" />
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        /* Container for car listings */
+        #carList {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Car card */
+        .car-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin: 15px;
+            padding: 15px;
+            text-align: center;
+            width: 250px;
+            transition: transform 0.2s;
+        }
+
+        .car-card:hover {
+            transform: scale(1.05);
+        }
+
+        /* Input fields */
+        input[type="text"],
+        input[type="number"],
+        input[type="email"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            font-size: 16px; /* Ensure consistent font size */
+        }
+
+        /* Button */
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px; /* Ensure consistent font size */
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 600px) {
+            .car-card {
+                width: 90%;
+            }
+        }
+    </style>
     <script type="module">
         // Your Firebase configuration
         const firebaseConfig = {
@@ -36,10 +107,10 @@
                 carsSnapshot.forEach((doc) => {
                     const car = doc.data();
                     const carDiv = document.createElement("div");
+                    carDiv.classList.add("car-card"); // Add class for styling
                     carDiv.innerHTML = `
                         <h3>${car.make} ${car.model} (${car.year}) - $${car.price}</h3>
                         <img src="${car.imageUrl}" alt="Car Image" style="width:200px;height:auto;">
-                        <br>
                         <input type="email" placeholder="Your Email" id="bidderEmail-${doc.id}" required>
                         <input type="number" placeholder="Bid Amount" id="bidAmount-${doc.id}" required>
                         <button id="bidButton-${doc.id}">Place Bid</button>
