@@ -43,7 +43,7 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, updateDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
@@ -113,7 +113,7 @@
         async function approveBid(carId, bidderEmail) {
             const carRef = doc(db, "cars", carId);
             try {
-                const carDoc = await getDocs(carRef);
+                const carDoc = await getDoc(carRef); // Use getDoc instead of getDocs
                 const car = carDoc.data();
                 const bids = car.bids || [];
                 const bidsToUpdate = bids.map(bid => {
@@ -135,7 +135,7 @@
         async function selectWinner(carId, winnerEmail) {
             const carRef = doc(db, "cars", carId);
             try {
-                const carDoc = await getDocs(carRef);
+                const carDoc = await getDoc(carRef); // Use getDoc instead of getDocs
                 const car = carDoc.data();
                 const bids = car.bids || [];
 
