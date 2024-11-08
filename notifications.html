@@ -23,6 +23,13 @@
             background: white;
             border-radius: 5px;
         }
+        .notification {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 5px;
+        }
         button {
             background-color: #4caf50;
             color: white;
@@ -41,14 +48,16 @@
     <h1>Bidder Approval</h1>
     <div id="bids-container"></div>
 
+    <h2>Notifications</h2>
+    <div id="notifications-container"></div>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, updateDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, updateDoc, doc, getDoc, addDoc } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
             authDomain: "user-login-form-a440d.firebaseapp.com",
-            databaseURL: "https://user-login-form-a440d-default-rtdb.firebaseio.com",
             projectId: "user-login-form-a440d",
             storageBucket: "user-login-form-a440d.appspot.com",
             messagingSenderId: "536643428878",
@@ -117,18 +126,18 @@
                 if (!carDoc.exists()) {
                     throw new Error("Car document not found.");
                 }
-                
+
                 const car = carDoc.data();
                 const bids = car.bids || [];
                 const bidsToUpdate = bids.map(bid => {
                     if (bid.bidderEmail === bidderEmail) {
-                        return { ...bid, approved: true }; // Ensure the structure remains compatible
+                        return { ...bid, approved: true };
                     }
                     return bid;
                 });
 
                 await updateDoc(carRef, { bids: bidsToUpdate });
-                sendNotification(bidderEmail, 'Your bid has been approved!');
+                await sendNotification(bidderEmail, 'Your bid has been approved!');
                 loadBids(); // Refresh bids
             } catch (error) {
                 console.error("Error approving bid:", error);
@@ -139,25 +148,40 @@
         async function selectWinner(carId, winnerEmail) {
             const carRef = doc(db, "cars", carId);
             try {
-                const carDoc = await getDoc(carRef); // Ensure using getDoc
+                const carDoc = await getDoc(carRef);
                 if (!carDoc.exists()) {
                     throw new Error("Car document not found.");
                 }
 
                 const car = carDoc.data();
                 const bids = car.bids || [];
-
                 const winningBid = bids.find(bid => bid.bidderEmail === winnerEmail && bid.approved);
                 if (winningBid) {
                     await updateDoc(carRef, { winner: winnerEmail });
-                    sendPaymentNotification(winnerEmail, car); // Send notification with payment link
-                    loadBids(); // Refresh bids and remove the car from the list
+                    await sendPaymentNotification(winnerEmail, car);
+                    loadBids(); // Refresh bids
                 } else {
                     alert("You must approve the bidder before selecting them as a winner.");
                 }
             } catch (error) {
                 console.error("Error selecting winner:", error);
                 alert("Failed to select the winner. Please try again.");
+            }
+        }
+
+        async function sendNotification(email, message) {
+            try {
+                const notificationData = {
+                    email: email,
+                    message: message,
+                    timestamp: new Date(), // Set the current timestamp
+                };
+
+                // Add the notification to the "notifications" collection
+                await addDoc(collection(db, "notifications"), notificationData);
+                console.log('Notification sent:', notificationData);
+            } catch (error) {
+                console.error('Error sending notification:', error);
             }
         }
 
@@ -170,17 +194,37 @@
                 </a>
             `;
 
-            // Send the notification to the user notifications tab
-            await fetch('http://localhost:3000/send-notification', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, message }),
-            });
+            await sendNotification(email, message);
         }
 
-        window.onload = loadBids;
+        async function loadNotifications() {
+            const notificationsContainer = document.getElementById("notifications-container");
+            try {
+                const notificationsSnapshot = await getDocs(collection(db, "notifications"));
+                notificationsContainer.innerHTML = ""; // Clear previous notifications
+
+                notificationsSnapshot.forEach((doc) => {
+                    const notification = doc.data();
+                    const notificationElement = document.createElement("div");
+                    notificationElement.classList.add("notification");
+                    notificationElement.innerHTML = `
+                        <strong>${new Date(notification.timestamp).toLocaleString()}</strong><br>
+                        <strong>Email:</strong> ${notification.email}<br>
+                        <strong>Message:</strong> ${notification.message}<br>
+                        <hr>
+                    `;
+                    notificationsContainer.appendChild(notificationElement);
+                });
+            } catch (error) {
+                console.error("Error loading notifications:", error);
+                notificationsContainer.innerHTML = "<p>Error loading notifications. Please try again later.</p>";
+            }
+        }
+
+        window.onload = () => {
+            loadBids();
+            loadNotifications(); // Load notifications when the page loads
+        };
     </script>
 </body>
 </html>
