@@ -36,7 +36,8 @@ h1 {
 
 /* Input fields */
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+input[type="email"] {  /* Added input[type="email"] */
     width: calc(100% - 20px);
     padding: 10px;
     margin: 5px 0;
