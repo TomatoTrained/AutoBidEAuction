@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Notifications</title>
+    <title>Bidder Approval</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,22 +16,34 @@
             color: green;
             text-align: center;
         }
-        .notification {
+        .bid {
             padding: 10px;
             border: 1px solid #ccc;
             margin-bottom: 10px;
             background: white;
             border-radius: 5px;
         }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
-    <h1>User Notifications</h1>
-    <div id="notifications-container"></div>
+    <h1>Bidder Approval</h1>
+    <div id="bids-container"></div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js';
-        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, updateDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
@@ -43,38 +55,132 @@
             appId: "1:536643428878:web:b9527baf1828015b0a525f",
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function loadNotifications() {
-            const notificationsContainer = document.getElementById("notifications-container");
+        async function loadBids() {
+            const bidsContainer = document.getElementById("bids-container");
             try {
-                const notificationsSnapshot = await getDocs(collection(db, "notifications"));
-                notificationsContainer.innerHTML = ""; // Clear previous notifications
+                const carsSnapshot = await getDocs(collection(db, "cars"));
+                bidsContainer.innerHTML = ""; // Clear previous bids
 
-                notificationsSnapshot.forEach((doc) => {
-                    const notification = doc.data();
-                    const notificationElement = document.createElement("div");
-                    notificationElement.classList.add("notification");
-                    notificationElement.innerHTML = `
-                        <strong>${notification.title}</strong><br>
-                        <p>${notification.message}</p>
-                        <small>${new Date(notification.date).toLocaleString()}</small>
-                    `;
-                    notificationsContainer.appendChild(notificationElement);
+                carsSnapshot.forEach((carDoc) => {
+                    const car = carDoc.data();
+                    const bids = car.bids || [];
+
+                    bids.forEach((bid) => {
+                        const bidElement = document.createElement("div");
+                        bidElement.classList.add("bid");
+                        bidElement.innerHTML = `
+                            <strong>Car:</strong> ${car.make} ${car.model}<br>
+                            <strong>Bidder Email:</strong> ${bid.bidderEmail}<br>
+                            <strong>Bid Amount:</strong> $${bid.bidAmount}<br>
+                            <strong>Date:</strong> ${new Date(bid.date).toLocaleString()}<br>
+                            <button class="approve-btn" data-car-id="${carDoc.id}" data-bidder-email="${bid.bidderEmail}">Approve</button>
+                            <button class="select-winner-btn" data-car-id="${carDoc.id}" data-bidder-email="${bid.bidderEmail}">Select Winner</button>
+                        `;
+                        bidsContainer.appendChild(bidElement);
+                    });
                 });
 
-                if (notificationsSnapshot.empty) {
-                    notificationsContainer.innerHTML = "<p>No notifications available.</p>";
-                }
+                attachEventListeners();
             } catch (error) {
-                console.error("Error loading notifications:", error);
-                notificationsContainer.innerHTML = "<p>Error loading notifications. Please try again later.</p>";
+                console.error("Error loading bids:", error);
+                bidsContainer.innerHTML = "<p>Error loading bids. Please try again later.</p>";
             }
         }
 
-        window.onload = loadNotifications;
+        function attachEventListeners() {
+            const approveButtons = document.querySelectorAll('.approve-btn');
+            approveButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const carId = button.getAttribute('data-car-id');
+                    const bidderEmail = button.getAttribute('data-bidder-email');
+                    approveBid(carId, bidderEmail);
+                });
+            });
+
+            const selectWinnerButtons = document.querySelectorAll('.select-winner-btn');
+            selectWinnerButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const carId = button.getAttribute('data-car-id');
+                    const bidderEmail = button.getAttribute('data-bidder-email');
+                    selectWinner(carId, bidderEmail);
+                });
+            });
+        }
+
+        async function approveBid(carId, bidderEmail) {
+            const carRef = doc(db, "cars", carId);
+            try {
+                const carDoc = await getDoc(carRef);
+                if (!carDoc.exists()) {
+                    throw new Error("Car document not found.");
+                }
+                
+                const car = carDoc.data();
+                const bids = car.bids || [];
+                const bidsToUpdate = bids.map(bid => {
+                    if (bid.bidderEmail === bidderEmail) {
+                        return { ...bid, approved: true }; // Ensure the structure remains compatible
+                    }
+                    return bid;
+                });
+
+                await updateDoc(carRef, { bids: bidsToUpdate });
+                sendNotification(bidderEmail, 'Your bid has been approved!');
+                loadBids(); // Refresh bids
+            } catch (error) {
+                console.error("Error approving bid:", error);
+                alert("Failed to approve the bid. Please try again.");
+            }
+        }
+
+        async function selectWinner(carId, winnerEmail) {
+            const carRef = doc(db, "cars", carId);
+            try {
+                const carDoc = await getDoc(carRef); // Ensure using getDoc
+                if (!carDoc.exists()) {
+                    throw new Error("Car document not found.");
+                }
+
+                const car = carDoc.data();
+                const bids = car.bids || [];
+
+                const winningBid = bids.find(bid => bid.bidderEmail === winnerEmail && bid.approved);
+                if (winningBid) {
+                    await updateDoc(carRef, { winner: winnerEmail });
+                    sendPaymentNotification(winnerEmail, car); // Send notification with payment link
+                    loadBids(); // Refresh bids and remove the car from the list
+                } else {
+                    alert("You must approve the bidder before selecting them as a winner.");
+                }
+            } catch (error) {
+                console.error("Error selecting winner:", error);
+                alert("Failed to select the winner. Please try again.");
+            }
+        }
+
+        async function sendPaymentNotification(email, car) {
+            const message = `
+                Congratulations! You have been selected as the winner for the car ${car.make} ${car.model}. 
+                Please proceed to make your payment: 
+                <a href='https://www.paynow.co.zw/Payment/Link/?q=c2VhcmNoPWVkZHl3YWxlMzk4JTQwZ21haWwuY29tJmFtb3VudD0wLjAwJnJlZmVyZW5jZT0mbD0w' target='_blank'>
+                    <img src='https://www.paynow.co.zw/Content/Buttons/Medium_buttons/button_pay-now_medium.png' style='border:0'/>
+                </a>
+            `;
+
+            // Send the notification to the user notifications tab
+            await fetch('http://localhost:3000/send-notification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, message }),
+            });
+        }
+
+        window.onload = loadBids;
     </script>
 </body>
 </html>
