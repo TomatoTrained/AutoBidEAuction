@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bidder Approval</title>
+    <title>Notifications</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,13 +16,6 @@
             color: green;
             text-align: center;
         }
-        .bid {
-            padding: 10px;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
-            background: white;
-            border-radius: 5px;
-        }
         .notification {
             padding: 10px;
             border: 1px solid #ccc;
@@ -30,30 +23,15 @@
             background: white;
             border-radius: 5px;
         }
-        button {
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
     </style>
 </head>
 <body>
-    <h1>Bidder Approval</h1>
-    <div id="bids-container"></div>
-
-    <h2>Notifications</h2>
+    <h1>Notifications</h1>
     <div id="notifications-container"></div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, updateDoc, doc, getDoc, addDoc } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
@@ -66,136 +44,6 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
-        async function loadBids() {
-            const bidsContainer = document.getElementById("bids-container");
-            try {
-                const carsSnapshot = await getDocs(collection(db, "cars"));
-                bidsContainer.innerHTML = ""; // Clear previous bids
-
-                carsSnapshot.forEach((carDoc) => {
-                    const car = carDoc.data();
-                    const bids = car.bids || [];
-
-                    bids.forEach((bid) => {
-                        const bidElement = document.createElement("div");
-                        bidElement.classList.add("bid");
-                        bidElement.innerHTML = `
-                            <strong>Car:</strong> ${car.make} ${car.model}<br>
-                            <strong>Bidder Email:</strong> ${bid.bidderEmail}<br>
-                            <strong>Bid Amount:</strong> $${bid.bidAmount}<br>
-                            <strong>Date:</strong> ${new Date(bid.date).toLocaleString()}<br>
-                            <button class="approve-btn" data-car-id="${carDoc.id}" data-bidder-email="${bid.bidderEmail}">Approve</button>
-                            <button class="select-winner-btn" data-car-id="${carDoc.id}" data-bidder-email="${bid.bidderEmail}">Select Winner</button>
-                        `;
-                        bidsContainer.appendChild(bidElement);
-                    });
-                });
-
-                attachEventListeners();
-            } catch (error) {
-                console.error("Error loading bids:", error);
-                bidsContainer.innerHTML = "<p>Error loading bids. Please try again later.</p>";
-            }
-        }
-
-        function attachEventListeners() {
-            const approveButtons = document.querySelectorAll('.approve-btn');
-            approveButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const carId = button.getAttribute('data-car-id');
-                    const bidderEmail = button.getAttribute('data-bidder-email');
-                    approveBid(carId, bidderEmail);
-                });
-            });
-
-            const selectWinnerButtons = document.querySelectorAll('.select-winner-btn');
-            selectWinnerButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const carId = button.getAttribute('data-car-id');
-                    const bidderEmail = button.getAttribute('data-bidder-email');
-                    selectWinner(carId, bidderEmail);
-                });
-            });
-        }
-
-        async function approveBid(carId, bidderEmail) {
-            const carRef = doc(db, "cars", carId);
-            try {
-                const carDoc = await getDoc(carRef);
-                if (!carDoc.exists()) {
-                    throw new Error("Car document not found.");
-                }
-
-                const car = carDoc.data();
-                const bids = car.bids || [];
-                const bidsToUpdate = bids.map(bid => {
-                    if (bid.bidderEmail === bidderEmail) {
-                        return { ...bid, approved: true };
-                    }
-                    return bid;
-                });
-
-                await updateDoc(carRef, { bids: bidsToUpdate });
-                await sendNotification(bidderEmail, 'Your bid has been approved!');
-                loadBids(); // Refresh bids
-            } catch (error) {
-                console.error("Error approving bid:", error);
-                alert("Failed to approve the bid. Please try again.");
-            }
-        }
-
-        async function selectWinner(carId, winnerEmail) {
-            const carRef = doc(db, "cars", carId);
-            try {
-                const carDoc = await getDoc(carRef);
-                if (!carDoc.exists()) {
-                    throw new Error("Car document not found.");
-                }
-
-                const car = carDoc.data();
-                const bids = car.bids || [];
-                const winningBid = bids.find(bid => bid.bidderEmail === winnerEmail && bid.approved);
-                if (winningBid) {
-                    await updateDoc(carRef, { winner: winnerEmail });
-                    await sendPaymentNotification(winnerEmail, car);
-                    loadBids(); // Refresh bids
-                } else {
-                    alert("You must approve the bidder before selecting them as a winner.");
-                }
-            } catch (error) {
-                console.error("Error selecting winner:", error);
-                alert("Failed to select the winner. Please try again.");
-            }
-        }
-
-        async function sendNotification(email, message) {
-            try {
-                const notificationData = {
-                    email: email,
-                    message: message,
-                    timestamp: new Date(), // Set the current timestamp
-                };
-
-                // Add the notification to the "notifications" collection
-                await addDoc(collection(db, "notifications"), notificationData);
-                console.log('Notification sent:', notificationData);
-            } catch (error) {
-                console.error('Error sending notification:', error);
-            }
-        }
-
-        async function sendPaymentNotification(email, car) {
-            const message = `
-                Congratulations! You have been selected as the winner for the car ${car.make} ${car.model}. 
-                Please proceed to make your payment: 
-                <a href='https://www.paynow.co.zw/Payment/Link/?q=c2VhcmNoPWVkZHl3YWxlMzk4JTQwZ21haWwuY29tJmFtb3VudD0wLjAwJnJlZmVyZW5jZT0mbD0w' target='_blank'>
-                    <img src='https://www.paynow.co.zw/Content/Buttons/Medium_buttons/button_pay-now_medium.png' style='border:0'/>
-                </a>
-            `;
-
-            await sendNotification(email, message);
-        }
 
         async function loadNotifications() {
             const notificationsContainer = document.getElementById("notifications-container");
@@ -221,10 +69,7 @@
             }
         }
 
-        window.onload = () => {
-            loadBids();
-            loadNotifications(); // Load notifications when the page loads
-        };
+        window.onload = loadNotifications; // Load notifications when the page loads
     </script>
 </body>
 </html>
