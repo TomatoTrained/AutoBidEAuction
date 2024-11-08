@@ -65,7 +65,8 @@
                 const bids = car.bids || [];
 
                 bids.forEach(bid => {
-                    if (bid.bidderEmail.trim().toLowerCase() === bidderEmail.trim().toLowerCase()) {
+                    // Check if bidderEmail exists in the bid object
+                    if (bid.bidderEmail && bid.bidderEmail.trim().toLowerCase() === bidderEmail.trim().toLowerCase()) {
                         myBids.push({
                             car: car,
                             bidAmount: bid.bidAmount,
