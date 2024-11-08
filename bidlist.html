@@ -80,6 +80,16 @@
                         `;
                         bidsContainer.appendChild(bidElement);
                     });
+
+                    // Add revoke winner button if a winner already exists
+                    if (car.winner) {
+                        const winnerElement = document.createElement("div");
+                        winnerElement.innerHTML = `
+                            <strong>Current Winner:</strong> ${car.winner}<br>
+                            <button class="revoke-winner-btn" data-car-id="${carDoc.id}">Revoke Winner</button>
+                        `;
+                        bidsContainer.appendChild(winnerElement);
+                    }
                 });
 
                 attachEventListeners();
@@ -107,6 +117,14 @@
                     selectWinner(carId, bidderEmail);
                 });
             });
+
+            const revokeWinnerButtons = document.querySelectorAll('.revoke-winner-btn');
+            revokeWinnerButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const carId = button.getAttribute('data-car-id');
+                    revokeWinner(carId);
+                });
+            });
         }
 
         async function approveBid(carId, bidderEmail) {
@@ -127,8 +145,7 @@
                 });
 
                 await updateDoc(carRef, { bids: bidsToUpdate });
-                
-                // Send notification and show success/failure message
+
                 const notificationResult = await sendNotification(bidderEmail, `${car.make} ${car.model} bid approved!`);
                 if (notificationResult) {
                     alert("Bid approved successfully!");
@@ -152,16 +169,19 @@
                 }
 
                 const car = carDoc.data();
-                const bids = car.bids || [];
+                if (car.winner) {
+                    alert("A winner has already been selected for this car.");
+                    return;
+                }
 
+                const bids = car.bids || [];
                 const winningBid = bids.find(bid => bid.bidderEmail === winnerEmail && bid.approved);
                 if (winningBid) {
                     await updateDoc(carRef, {
                         winner: winnerEmail,
                         isLocked: true // Lock the car
                     });
-                    
-                    // Send payment notification and show success/failure message
+
                     const paymentNotificationResult = await sendPaymentNotification(winnerEmail, car);
                     if (paymentNotificationResult) {
                         alert("Winner selected successfully!");
@@ -176,6 +196,21 @@
             } catch (error) {
                 console.error("Error selecting winner:", error);
                 alert("Failed to select the winner. Please try again.");
+            }
+        }
+
+        async function revokeWinner(carId) {
+            const carRef = doc(db, "cars", carId);
+            try {
+                await updateDoc(carRef, {
+                    winner: null,
+                    isLocked: false // Unlock the car for new bids
+                });
+                alert("Winner revoked successfully!");
+                loadBids(); // Refresh bids
+            } catch (error) {
+                console.error("Error revoking winner:", error);
+                alert("Failed to revoke the winner. Please try again.");
             }
         }
 
@@ -208,6 +243,7 @@
                 <a href="${paymentLink}" target="_blank">
                     <img src='https://www.paynow.co.zw/Content/Buttons/Medium_buttons/button_pay-now_medium.png' style='border:0'/>
                 </a>
+                <br><strong>Date:</strong> ${new Date().toLocaleString()}
             `;
 
             return await sendNotification(email, message); // Return the result of the sendNotification function
