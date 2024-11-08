@@ -51,22 +51,35 @@
                 const notificationsSnapshot = await getDocs(collection(db, "notifications"));
                 notificationsContainer.innerHTML = ""; // Clear previous notifications
 
+                let hasValidNotifications = false; // Flag to check if any valid notifications are found
+
                 notificationsSnapshot.forEach((doc) => {
                     const notification = doc.data();
-                    const email = notification.email || "No email provided";
-                    const message = notification.message || "No message available";
-                    const timestamp = notification.timestamp ? new Date(notification.timestamp) : new Date();
 
-                    const notificationElement = document.createElement("div");
-                    notificationElement.classList.add("notification");
-                    notificationElement.innerHTML = `
-                        <strong>${timestamp.toLocaleString()}</strong><br>
-                        <strong>Email:</strong> ${email}<br>
-                        <strong>Message:</strong> ${message}<br>
-                        <hr>
-                    `;
-                    notificationsContainer.appendChild(notificationElement);
+                    // Check for required fields
+                    if (notification.email && notification.message && notification.timestamp) {
+                        const email = notification.email;
+                        const message = notification.message;
+                        const timestamp = new Date(notification.timestamp);
+
+                        const notificationElement = document.createElement("div");
+                        notificationElement.classList.add("notification");
+                        notificationElement.innerHTML = `
+                            <strong>${timestamp.toLocaleString()}</strong><br>
+                            <strong>Email:</strong> ${email}<br>
+                            <strong>Message:</strong> ${message}<br>
+                            <hr>
+                        `;
+                        notificationsContainer.appendChild(notificationElement);
+                        hasValidNotifications = true; // Set flag to true if a valid notification is found
+                    }
                 });
+
+                // If no valid notifications are found, show a message
+                if (!hasValidNotifications) {
+                    notificationsContainer.innerHTML = "<p>No notifications available.</p>";
+                }
+
             } catch (error) {
                 console.error("Error loading notifications:", error);
                 notificationsContainer.innerHTML = "<p>Error loading notifications. Please try again later.</p>";
