@@ -39,6 +39,7 @@
                     carDiv.innerHTML = `
                         <h3>${car.make} ${car.model} (${car.year}) - $${car.price}</h3>
                         <img src="${car.imageUrl}" alt="Car Image" style="width:200px;height:auto;">
+                        <br>
                         <input type="email" placeholder="Your Email" id="bidderEmail-${doc.id}" required>
                         <input type="number" placeholder="Bid Amount" id="bidAmount-${doc.id}" required>
                         <button id="bidButton-${doc.id}">Place Bid</button>
