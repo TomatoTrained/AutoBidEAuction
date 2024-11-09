@@ -4,27 +4,66 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Bids</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
+        /* General Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8; /* Light background color */
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #00796b; /* Dark teal color */
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .section {
+            max-width: 600px; /* Limit width for better readability */
+            margin: auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
         .bid {
-            padding: 10px;
+            padding: 15px;
             border-bottom: 1px solid #ccc;
+            transition: background 0.3s; /* Smooth background transition */
         }
 
         .bid:last-child {
             border-bottom: none;
         }
 
-        h1 {
-            color: green;
-            font-family: Arial, sans-serif;
+        .bid:hover {
+            background: #e0f7fa; /* Light blue background on hover */
+            cursor: pointer; /* Pointer cursor on hover */
         }
 
-        body {
-            background-color: white;
+        .bid strong {
+            color: #00796b; /* Dark teal for labels */
         }
 
-        .section {
-            margin-top: 20px;
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em; /* Adjust heading size for smaller screens */
+            }
+
+            .section {
+                padding: 15px; /* Adjust padding for smaller screens */
+            }
+
+            .bid {
+                padding: 10px; /* Adjust padding for smaller bids */
+            }
         }
     </style>
 </head>
