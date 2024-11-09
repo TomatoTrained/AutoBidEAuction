@@ -1,56 +1,97 @@
 <!DOCTYPE html>
-<html lang="eng">
-  <head>
-    <title>Home Page For The Renowned Autobid User</title>
+<html lang="en">
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Page For The Renowned AutoBid User</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-      .social-links {
-        display: flex;
-        justify-content: space-between;
-      }
+        /* Reset some default styles */
+        body, h1, p {
+            margin: 0;
+            padding: 0;
+        }
 
-      .social-links a {
-        color: #333;
-        font-size: 24px;
-        margin: 10px;
-      }
+        /* General Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* Full viewport height */
+            text-align: center;
+            padding: 20px;
+            background-image: linear-gradient(to bottom right, #e0f7fa, #80deea); /* Gradient background */
+        }
 
-      .social links {
-        transition: color 0.2 ease;
-      }
+        h1 {
+            color: #00796b; /* Dark teal color */
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
 
-      .social-links i:hover {
-        color: #666;
-      }
-      h1 {
-        color: green;
-        font-family: Arial, sans-serif;
-      }
+        p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px; /* Space between social links */
+        }
+
+        .social-links a {
+            color: #00796b; /* Dark teal color for links */
+            font-size: 30px; /* Larger icon size */
+            transition: color 0.3s ease, transform 0.3s ease; /* Smooth transition */
+        }
+
+        .social-links a:hover {
+            color: #004d40; /* Darker shade on hover */
+            transform: scale(1.1); /* Slightly enlarge on hover */
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em; /* Adjust heading size for smaller screens */
+            }
+
+            p {
+                font-size: 1em; /* Adjust paragraph size for smaller screens */
+            }
+
+            .social-links a {
+                font-size: 24px; /* Smaller icon size for mobile */
+            }
+        }
     </style>
-  </head>
-  <body background="">
-    <h1>To our Dearest Users</h1>
+</head>
+<body>
+    <h1>To Our Dearest Users</h1>
     <p>
-      "Thank you for being part of the AutoBid Community! <br />We are thrilled
-      to have you on board and look forward to helping you find your dream car "
+        "Thank you for being part of the AutoBid Community! <br />We are thrilled
+        to have you on board and look forward to helping you find your dream car."
     </p>
     <div class="social-links">
-      <a href="link to socials" target="blank">
-        <i class="fa fa-facebook"></i
-      ></a>
-
-      <a href="link to socials" target="blank">
-        <i class="fa fa-twitter"></i
-      ></a>
-
-      <a href="link to socials" target="blank">
-        <i class="fa fa-linkedin"></i
-      ></a>
-
-      <a href="link to socials" target="blank">
-        <i class="fa fa-instagram"></i
-      ></a>
+        <a href="link to socials" target="_blank">
+            <i class="fab fa-facebook"></i>
+        </a>
+        <a href="link to socials" target="_blank">
+            <i class="fab fa-twitter"></i>
+        </a>
+        <a href="link to socials" target="_blank">
+            <i class="fab fa-linkedin"></i>
+        </a>
+        <a href="link to socials" target="_blank">
+            <i class="fab fa-instagram"></i>
+        </a>
     </div>
-  </body>
+</body>
 </html>
