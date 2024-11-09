@@ -6,34 +6,59 @@
     <title>Bidder Approval</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradient background */
             margin: 0;
             padding: 20px;
             color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         h1 {
-            color: green;
+            color: white;
             text-align: center;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
+            margin-bottom: 20px;
+        }
+        #bids-container {
+            width: 100%;
+            max-width: 600px; /* Limit width for larger screens */
+            background: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
         .bid {
-            padding: 10px;
+            padding: 15px;
             border: 1px solid #ccc;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             background: white;
             border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .bid:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
         }
         button {
             background-color: #4caf50;
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
+            padding: 10px 15px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s;
+            margin-right: 5px; /* Space between buttons */
         }
         button:hover {
             background-color: #45a049;
+            transform: translateY(-2px); /* Lift effect on hover */
+        }
+        @media (max-width: 600px) {
+            #bids-container {
+                width: 90%; /* Responsive width for mobile */
+            }
         }
     </style>
 </head>
@@ -84,6 +109,7 @@
                     // Add revoke winner button if a winner already exists
                     if (car.winner) {
                         const winnerElement = document.createElement("div");
+                        winnerElement.classList.add("bid");
                         winnerElement.innerHTML = `
                             <strong>Current Winner:</strong> ${car.winner}<br>
                             <button class="revoke-winner-btn" data-car-id="${carDoc.id}">Revoke Winner</button>
