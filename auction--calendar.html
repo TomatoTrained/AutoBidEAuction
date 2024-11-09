@@ -4,7 +4,63 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User Calendar Downloads</title>
-    <link rel="stylesheet" href="stylz2.css" />
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #4a90e2, #9013fe); /* Gradient background */
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Full viewport height */
+            text-align: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1); /* Semi-transparent white */
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        }
+
+        a {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        a:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px); /* Lift effect on hover */
+        }
+
+        a:active {
+            transform: translateY(1px); /* Pressed effect */
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #ffcc00; /* Highlight color for messages */
+        }
+    </style>
     <script type="module">
         // Import necessary Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
@@ -36,24 +92,23 @@
                 if (snapshot.exists()) {
                     snapshot.forEach((childSnapshot) => {
                         const data = childSnapshot.val();
-                        console.log("Data:", data); // Log data for debugging
                         if (data && data.url && data.name) {
                             const link = document.createElement("a");
                             link.href = data.url;  // URL for downloading
                             link.download = data.name; // Suggest name for download
                             link.textContent = `Download ${data.name}`;
                             catalogueLinks.appendChild(link);
-                            catalogueLinks.appendChild(document.createElement("br")); // Line breaks for readability
                         } else {
                             console.error("Missing data:", data);
                         }
                     });
                 } else {
                     console.error("No calendars found in the database.");
-                    catalogueLinks.textContent = "No calendars available for download.";
+                    catalogueLinks.innerHTML = "<div class='message'>No calendars available for download.</div>";
                 }
             }, (error) => {
                 console.error("Error reading data:", error); // Handle errors
+                catalogueLinks.innerHTML = "<div class='message'>Error loading calendars. Please try again later.</div>";
             });
         });
     </script>
