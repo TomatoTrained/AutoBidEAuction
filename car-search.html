@@ -7,15 +7,18 @@
     <style>
         /* General Styles */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #00c6ff, #0072ff); /* Vibrant blue gradient */
             margin: 0;
             padding: 20px;
+            color: #333;
         }
 
         h1 {
             text-align: center;
-            color: #333;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
         }
 
         /* Container for car listings */
@@ -23,22 +26,24 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            gap: 15px; /* Add spacing between cards */
         }
 
         /* Car card */
         .car-card {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             margin: 15px;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             width: 250px;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .car-card:hover {
             transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
 
         /* Input fields */
@@ -50,23 +55,32 @@
             margin: 5px 0;
             border: 2px solid #007bff;
             border-radius: 5px;
-            font-size: 16px; /* Ensure consistent font size */
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="email"]:focus {
+            border-color: #0056b3; /* Darker blue on focus */
         }
 
         /* Button */
         button {
-            background-color: #007bff;
+            background-color: #28a745; /* Green button */
             color: white;
             padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
-            font-size: 16px; /* Ensure consistent font size */
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 16px;
+            width: 100%; /* Full width for buttons */
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #218838; /* Darker green on hover */
+            transform: translateY(-2px); /* Lift effect on hover */
         }
 
         /* Responsive Styles */
@@ -109,12 +123,12 @@
                     const carDiv = document.createElement("div");
                     carDiv.classList.add("car-card"); // Add class for styling
                     carDiv.innerHTML = `
-                        <h3>${car.make} ${car.model} (${car.year}) - $${car.price}</h3>
-                        <img src="${car.imageUrl}" alt="Car Image" style="width:200px;height:auto;">
+                        <h3>${car.make} ${car.model} (${car.year})</h3>
+                        <img src="${car.imageUrl}" alt="Car Image" style="width:100%; height:auto; border-radius: 8px;">
+                        <p style="font-weight: bold; color: #007bff;">$${car.price}</p>
                         <input type="email" placeholder="Your Email" id="bidderEmail-${doc.id}" required>
                         <input type="number" placeholder="Bid Amount" id="bidAmount-${doc.id}" required>
                         <button id="bidButton-${doc.id}">Place Bid</button>
-                        <hr>
                     `;
                     carList.appendChild(carDiv);
 
