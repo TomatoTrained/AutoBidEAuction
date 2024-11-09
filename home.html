@@ -47,13 +47,28 @@
         }
 
         .social-links a {
-            color: #00796b; /* Dark teal color for links */
             font-size: 30px; /* Larger icon size */
-            transition: color 0.3s ease, transform 0.3s ease; /* Smooth transition */
+            transition: transform 0.3s ease; /* Smooth transition */
+        }
+
+        /* Specific colors for social media icons */
+        .social-links a.facebook {
+            color: #3b5998; /* Facebook Blue */
+        }
+
+        .social-links a.twitter {
+            color: #1DA1F2; /* Twitter Blue */
+        }
+
+        .social-links a.linkedin {
+            color: #0077B5; /* LinkedIn Blue */
+        }
+
+        .social-links a.instagram {
+            color: #C13584; /* Instagram Color */
         }
 
         .social-links a:hover {
-            color: #004d40; /* Darker shade on hover */
             transform: scale(1.1); /* Slightly enlarge on hover */
         }
 
@@ -80,16 +95,16 @@
         to have you on board and look forward to helping you find your dream car."
     </p>
     <div class="social-links">
-        <a href="link to socials" target="_blank">
+        <a href="link to socials" target="_blank" class="facebook">
             <i class="fab fa-facebook"></i>
         </a>
-        <a href="link to socials" target="_blank">
+        <a href="link to socials" target="_blank" class="twitter">
             <i class="fab fa-twitter"></i>
         </a>
-        <a href="link to socials" target="_blank">
+        <a href="link to socials" target="_blank" class="linkedin">
             <i class="fab fa-linkedin"></i>
         </a>
-        <a href="link to socials" target="_blank">
+        <a href="link to socials" target="_blank" class="instagram">
             <i class="fab fa-instagram"></i>
         </a>
     </div>
