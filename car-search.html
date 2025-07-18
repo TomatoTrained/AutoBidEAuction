@@ -8,7 +8,7 @@
         /* General Styles */
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(to right, #00c6ff, #0072ff); /* Vibrant blue gradient */
+            background: linear-gradient(to right, #00c6ff, #0072ff);
             margin: 0;
             padding: 20px;
             color: #333;
@@ -26,7 +26,7 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 15px; /* Add spacing between cards */
+            gap: 15px;
         }
 
         /* Car card */
@@ -62,12 +62,12 @@
         input[type="text"]:focus,
         input[type="number"]:focus,
         input[type="email"]:focus {
-            border-color: #0056b3; /* Darker blue on focus */
+            border-color: #0056b3;
         }
 
         /* Button */
         button {
-            background-color: #28a745; /* Green button */
+            background-color: #28a745;
             color: white;
             padding: 10px 15px;
             border: none;
@@ -75,12 +75,20 @@
             cursor: pointer;
             transition: background-color 0.3s, transform 0.2s;
             font-size: 16px;
-            width: 100%; /* Full width for buttons */
+            width: 100%;
         }
 
         button:hover {
-            background-color: #218838; /* Darker green on hover */
-            transform: translateY(-2px); /* Lift effect on hover */
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        /* Error message */
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
         }
 
         /* Responsive Styles */
@@ -91,7 +99,7 @@
         }
     </style>
     <script type="module">
-        // Your Firebase configuration
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBXE5Cp4foZxRPcAOlCSHfbKTFwIWdQSWE",
             authDomain: "user-login-form-a440d.firebaseapp.com",
@@ -110,8 +118,26 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Object to track emails that have placed bids
+        // Track bids by email
         const existingBids = {};
+
+        // Helper function to show error
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(`error-${elementId}`);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Helper function to hide error
+        function hideError(elementId) {
+            document.getElementById(`error-${elementId}`).style.display = 'none';
+        }
+
+        // Validate email format
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
 
         async function loadCars() {
             try {
@@ -121,19 +147,41 @@
                 carsSnapshot.forEach((doc) => {
                     const car = doc.data();
                     const carDiv = document.createElement("div");
-                    carDiv.classList.add("car-card"); // Add class for styling
+                    carDiv.classList.add("car-card");
                     carDiv.innerHTML = `
                         <h3>${car.make} ${car.model} (${car.year})</h3>
                         <img src="${car.imageUrl}" alt="Car Image" style="width:100%; height:auto; border-radius: 8px;">
                         <p style="font-weight: bold; color: #007bff;">$${car.price}</p>
                         <input type="email" placeholder="Your Email" id="bidderEmail-${doc.id}" required>
-                        <input type="number" placeholder="Bid Amount" id="bidAmount-${doc.id}" required>
+                        <div id="error-bidderEmail-${doc.id}" class="error-message"></div>
+                        <input type="number" placeholder="Bid Amount" id="bidAmount-${doc.id}" min="${car.price + 1}" step="0.01" required>
+                        <div id="error-bidAmount-${doc.id}" class="error-message"></div>
                         <button id="bidButton-${doc.id}">Place Bid</button>
                     `;
                     carList.appendChild(carDiv);
 
-                    // Add event listener for the button
+                    // Add event listeners
                     document.getElementById(`bidButton-${doc.id}`).addEventListener("click", () => placeBid(doc.id, car));
+                    
+                    // Add input validation
+                    document.getElementById(`bidderEmail-${doc.id}`).addEventListener('input', (e) => {
+                        if (!isValidEmail(e.target.value)) {
+                            showError(`bidderEmail-${doc.id}`, "Please enter a valid email");
+                        } else {
+                            hideError(`bidderEmail-${doc.id}`);
+                        }
+                    });
+
+                    document.getElementById(`bidAmount-${doc.id}`).addEventListener('input', (e) => {
+                        const value = parseFloat(e.target.value);
+                        if (isNaN(value) || value <= 0) {
+                            showError(`bidAmount-${doc.id}`, "Bid must be greater than zero");
+                        } else if (value <= car.price) {
+                            showError(`bidAmount-${doc.id}`, `Bid must be higher than $${car.price}`);
+                        } else {
+                            hideError(`bidAmount-${doc.id}`);
+                        }
+                    });
                 });
             } catch (error) {
                 console.error("Error loading cars:", error);
@@ -142,42 +190,63 @@
         }
 
         async function placeBid(carId, car) {
-            const bidderEmail = document.getElementById(`bidderEmail-${carId}`).value;
-            const bidAmount = document.getElementById(`bidAmount-${carId}`).value;
+            const bidderEmail = document.getElementById(`bidderEmail-${carId}`).value.trim();
+            const bidAmountInput = document.getElementById(`bidAmount-${carId}`);
+            const bidAmount = parseFloat(bidAmountInput.value);
 
-            if (!bidderEmail || !bidAmount) {
-                alert("Please enter both your email and a bid amount.");
-                return;
+            // Validate inputs
+            let isValid = true;
+
+            if (!bidderEmail) {
+                showError(`bidderEmail-${carId}`, "Email is required");
+                isValid = false;
+            } else if (!isValidEmail(bidderEmail)) {
+                showError(`bidderEmail-${carId}`, "Please enter a valid email");
+                isValid = false;
             }
 
-            // Check if the email has already placed a bid
+            if (isNaN(bidAmount)) {
+                showError(`bidAmount-${carId}`, "Please enter a valid number");
+                isValid = false;
+            } else if (bidAmount <= 0) {
+                showError(`bidAmount-${carId}`, "Bid must be greater than zero");
+                isValid = false;
+            } else if (bidAmount <= car.price) {
+                showError(`bidAmount-${carId}`, `Bid must be higher than $${car.price}`);
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            // Check for existing bid
             if (existingBids[bidderEmail]) {
                 const userConfirmed = confirm("You have already placed a bid with this email. Would you like to bid again?");
-                if (!userConfirmed) {
-                    return; // Exit if the user does not confirm
-                }
+                if (!userConfirmed) return;
             }
 
             try {
-                // Update Firestore
                 await updateDoc(doc(db, "cars", carId), {
                     bids: arrayUnion({
                         bidderEmail,
-                        bidAmount: parseFloat(bidAmount),
+                        bidAmount: bidAmount,
                         date: new Date().toISOString(),
                     }),
                 });
 
-                existingBids[bidderEmail] = true; // Mark the email as having placed a bid
+                existingBids[bidderEmail] = true;
                 alert("Bid placed successfully!");
+                
+                // Clear inputs
+                document.getElementById(`bidderEmail-${carId}`).value = '';
+                bidAmountInput.value = '';
             } catch (error) {
                 console.error("Error placing bid:", error);
                 alert("Failed to place bid. Please try again later.");
             }
         }
 
-        // Load the cars when the page is loaded
-        loadCars();
+        // Load cars when page loads
+        document.addEventListener('DOMContentLoaded', loadCars);
     </script>
 </head>
 <body>
